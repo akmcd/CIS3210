@@ -98,10 +98,11 @@
   const PAGES = [
     ['index.html', 'Home', 'home'],
     ['read.html', 'Read', 'read'],
-    ['review.html', 'In-class questions', 'review'],
+    ['review.html', 'In-class', 'review'],
+    ['knowledge.html', 'Textbook checks', 'knowledge'],
     ['flashcards.html', 'Flashcards', 'flashcards'],
     ['quiz.html', 'Quizzes', 'quiz'],
-    ['exam.html', 'Practice exam', 'exam']
+    ['exam.html', 'Exam', 'exam']
   ];
 
   function applyTheme(t) {

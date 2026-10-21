@@ -111,7 +111,7 @@
       [0, 'physical', ['Hl', 'Hn', 'Ht', 'M'], 'The physical layer puts the frame\'s bits on the medium.'],
       [1, 'link', ['Hl', 'Hn', 'Ht', 'M'], 'The switch works only up to the link layer: it reads Hl and forwards the frame within the LAN.'],
       [2, 'link', ['Hl', 'Hn', 'Ht', 'M'], 'The router\'s link layer receives the frame and strips Hl.'],
-      [2, 'network', ['Hn', 'Ht', 'M'], 'The router reads Hn (destination IP) to pick the next link. It never looks inside at Ht.'],
+      [2, 'network', ['Hn', 'Ht', 'M'], 'The router reads Hn (destination IP) to pick the next link. Forwarding doesn\'t need Ht.'],
       [2, 'link', ['Hl′', 'Hn', 'Ht', 'M'], 'A new link header Hl′ for the next link, which may be a different technology. This is internetworking.'],
       [3, 'link', ['Hl′', 'Hn', 'Ht', 'M'], 'Destination link layer receives the frame and removes Hl′.'],
       [3, 'network', ['Hn', 'Ht', 'M'], 'Destination network layer checks Hn, removes it, and passes the segment up.'],

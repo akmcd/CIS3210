@@ -447,3 +447,23 @@ li.formula { list-style: none; margin-left: -1.2em; font-family: var(--mono); fo
   .stack-row { grid-template-columns: 70px 1fr; }
   .stack-unit { display: none; }
 }
+
+/* Textbook knowledge checks */
+.kc-note { max-width: 860px; margin: 8px 0 8px; }
+.kc-note p { margin: 0 0 0.5em; font-size: 0.95rem; }
+.kc-note p:last-child { margin-bottom: 0; }
+.kc-list { list-style: none; padding: 0; margin: 0 0 8px; max-width: 860px; }
+.kc-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px 14px; align-items: baseline; border: 1px solid var(--rule); border-radius: var(--radius-m); background: var(--paper-2); padding: 12px 16px; margin: 0 0 10px; }
+.kc-row.is-done { border-left: 4px solid var(--ok); }
+.kc-title { font-weight: 700; }
+.kc-what { color: var(--ink-2); font-size: 0.95rem; margin-top: 2px; }
+.kc-local { font-size: 0.9rem; margin-top: 4px; }
+@media (max-width: 520px) { .kc-row { grid-template-columns: auto minmax(0, 1fr); } .kc-row .ex-done { grid-column: 2; } }
+.table-note { font-size: 0.88rem; margin-top: -0.6em; }
+
+/* Per-choice explanations on select-all questions */
+.opt-why { display: block; margin-top: 4px; font-size: 0.9rem; color: var(--ink-2); }
+.option.missed::after { content: none; }
+.option.missed .opt-why::before { content: 'Missed. '; color: var(--ok); font-weight: 700; }
+.why-list { font-size: 0.93rem; padding-left: 1.2em; }
+.why-list li { margin-bottom: 0.3em; }
