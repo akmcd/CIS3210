@@ -1,0 +1,317 @@
+/* Practice Exam A: 50 fresh questions, none repeated from the quiz bank. Same schema as data/bank.js. */
+(function () {
+  const REQ = `GET /animalsearch?animal=monkey&food=banana HTTP/1.1\\r\\n
+Host: www.zoo.example\\r\\n
+User-Agent: Mozilla/5.0\\r\\n
+Accept-Language: fr\\r\\n
+\\r\\n`;
+
+  const RR = `(www.example.com, web.example.com, CNAME, 3600)
+(web.example.com, 192.0.2.10,      A,     3600)
+(example.com,     ns1.example.com,  NS,    86400)
+(example.com,     mail.example.com, MX,    3600)`;
+
+  const UDPS = `serverSocket = socket(AF_INET, SOCK_DGRAM)
+serverSocket.bind(('', 12000))
+while True:
+    message, clientAddress = serverSocket.recvfrom(2048)
+    serverSocket.sendto(message.decode().upper().encode(), clientAddress)`;
+
+  const TCPS = `serverSocket = socket(AF_INET, SOCK_STREAM)
+serverSocket.bind(('', 12000))
+serverSocket.listen(1)
+while True:
+    connectionSocket, addr = serverSocket.accept()
+    sentence = connectionSocket.recv(1024).decode()
+    connectionSocket.send(sentence.upper().encode())
+    connectionSocket.close()`;
+
+  const SR_TRACE = `Selective Repeat, window N = 4. pkt2 is lost.
+send pkt0, pkt1, pkt2 (lost), pkt3
+rcv ack0 -> send pkt4      receiver: buffer pkt3, send ack3
+rcv ack1 -> send pkt5      receiver: buffer pkt4, send ack4
+                           receiver: buffer pkt5, send ack5
+rcv ack3, ack4, ack5 -> record them
+pkt2 timeout -> resend pkt2 only
+receiver: rcv pkt2, deliver pkt2..pkt5, send ack2
+rcv ack2 -> ?`;
+
+  window.EXAM_A = [
+    /* ---------- Foundations and layering ---------- */
+    { id: 'e-1', topic: 'intro', kind: 'concept',
+      q: 'At the destination host, in what order are the headers removed as data moves up the stack?',
+      options: ['Hl, then Hn, then Ht', 'Ht, then Hn, then Hl', 'Hn, then Hl, then Ht', 'All three at once by the application'],
+      answer: 0,
+      why: 'Decapsulation reverses encapsulation: the link layer removes the frame header, the network layer the datagram header, the transport layer the segment header, leaving M for the application.' },
+    { id: 'e-2', topic: 'intro', kind: 'scenario',
+      q: 'A router in the middle of the path receives a frame carrying [Hl | Hn | Ht | M]. What does it do?',
+      options: ['Strips Hl, forwards using Hn, wraps it in a new frame; Ht untouched', 'Reads Ht to find which process on the destination should get it', 'Removes all the headers, then rebuilds the message for the next hop', 'Forwards the frame unchanged, reading only the link header Hl'],
+      answer: 0,
+      why: 'Routers implement physical, link and network layers. They act on network-layer fields and never inspect the transport segment inside.' },
+    { id: 'e-3', topic: 'intro', kind: 'concept',
+      q: 'In the airline analogy, baggage **check** at the source pairs with baggage **claim** at the destination. What does this illustrate?',
+      options: ['A layer acts at its own level; the peer layer at the far end matches it', 'Each layer must understand how every other layer does its work', 'Only the bottom layer does anything useful; the rest are bookkeeping', 'Layers at the source and destination must use different protocols'],
+      answer: 0,
+      why: 'Ticketing, baggage, gates, runway and routing each form a layer with peer actions at both ends. Like network layers, each relies only on the service of the layer below it.' },
+    { id: 'e-4', topic: 'intro', kind: 'concept',
+      q: 'Which statements describe packet switching?',
+      options: ['Users share network resources', 'Each packet includes a destination address', 'A dedicated circuit is reserved for each conversation', 'Network devices use forwarding information to deliver packets', 'Data is divided into small packets'],
+      answer: [0, 1, 3, 4],
+      why: 'Packet switching sends data without a dedicated circuit, using store-and-forward. Reserving a circuit is circuit switching, as in the old telephone network.' },
+
+    /* ---------- Internetworking ---------- */
+    { id: 'e-5', topic: 'internet', kind: 'concept',
+      q: 'Which description of a router is correct?',
+      options: ['A box with a processor, memory and one interface per attached network', 'A device that can only join two LANs that use the same technology', 'A long cable or repeater that extends one network to a new building', 'A server that resolves hostnames to addresses for the hosts on a LAN'],
+      answer: 0,
+      why: 'Routers are the primary devices for connecting heterogeneous networks, such as Ethernet to Wi-Fi.' },
+    { id: 'e-6', topic: 'internet', kind: 'scenario',
+      q: 'One commercial router could connect all four of an organization\'s networks, but the organization uses several routers. Why?',
+      options: ['Load balancing and better performance', 'Redundancy, so one router isn\'t a single point of failure', 'A router can never connect more than two networks, so several are required', 'With several paths, protocol software can reroute around a failure'],
+      answer: [0, 1, 3],
+      why: 'Commercial routers can connect more than two networks. Multiple routers are a design choice balancing reliability, capacity and cost.' },
+    { id: 'e-7', topic: 'internet', kind: 'calc',
+      q: 'A host sends a 1,250,000-byte file as packets into a 10 Mbps link. Ignoring headers and gaps between packets, how long does it take to push all the bits into the link?',
+      options: ['1 s', '0.125 s', '8 s', '10 s'],
+      answer: 0,
+      why: '1,250,000 bytes × 8 = 10,000,000 bits; 10⁷ bits ÷ 10⁷ bits/s = 1 s. Splitting into packets doesn\'t change the total transmission time at rate R.' },
+    { id: 'e-8', topic: 'internet', kind: 'concept',
+      q: 'Several homes share the access network up to the provider\'s headend, and downstream is much faster than upstream. Which access technology is this?',
+      options: ['Cable (hybrid fibre-coax)', 'DSL', 'Enterprise Ethernet', 'A data-centre network'],
+      answer: 0,
+      why: 'HFC is shared and asymmetric. DSL gives each home a dedicated telephone line to the central office\'s DSLAM.' },
+
+    /* ---------- Application architectures and transport services ---------- */
+    { id: 'e-9', topic: 'apps', kind: 'concept',
+      q: 'Which are drawbacks of peer-to-peer architectures?',
+      options: ['Peers come and go (intermittent availability)', 'Peers\' IP addresses change', 'Decentralization makes management harder', 'An always-on central server is required'],
+      answer: [0, 1, 2],
+      why: 'P2P needs no always-on server. That is a strength, along with self-scaling and lower cost.' },
+    { id: 'e-10', topic: 'apps', kind: 'scenario',
+      q: 'A trading app must never lose an order but can tolerate an extra 100 ms of delay. Which requirement drives its transport choice?',
+      options: ['Loss-intolerant: it needs reliable delivery (TCP)', 'Loss-tolerant: UDP is ideal because orders are small', 'It needs TCP\'s guaranteed minimum bandwidth', 'It needs a timing guarantee that only UDP gives'],
+      answer: 0,
+      why: 'Financial transactions are the textbook example of loss-intolerant apps. Neither TCP nor UDP guarantees bandwidth or timing.' },
+    { id: 'e-11', topic: 'apps', kind: 'scenario',
+      q: 'Why do video-conferencing apps often prefer UDP, with TCP as a fallback?',
+      options: ['Some loss is tolerable but TCP\'s throttling isn\'t; TCP if UDP is blocked', 'UDP guarantees the low delay bound that live conferencing needs to work', 'TCP can\'t carry video frames, so UDP is the only possible option', 'UDP encrypts the media stream, which TCP alone has no way to do'],
+      answer: 0,
+      why: 'Real-time apps react poorly to TCP\'s congestion control and can tolerate small losses. Many firewalls block UDP, hence the TCP backup.' },
+    { id: 'e-12', topic: 'apps', kind: 'concept',
+      q: 'On the transport-layer side of the socket, what control does the application developer have?',
+      options: ['Choosing the protocol, plus a few parameters like buffer sizes', 'Full control over how and when TCP retransmits lost data', 'Control over which routers the packets travel through', 'None at all, not even which transport protocol is used'],
+      answer: 0,
+      why: 'The developer controls everything on the application side and very little below the socket.' },
+
+    /* ---------- HTTP ---------- */
+    { id: 'e-13', topic: 'http', kind: 'calc',
+      q: 'RTT = 50 ms and transmission time is negligible. With non-persistent HTTP, how long does it take to fetch a base HTML file with no embedded objects?',
+      options: ['100 ms', '50 ms', '150 ms', '200 ms'],
+      answer: 0,
+      why: '2 RTT per object: one for the TCP handshake, one for the request (sent with the third handshake segment) and response. 2 × 50 = 100 ms.' },
+    { id: 'e-14', topic: 'http', kind: 'code',
+      q: 'Which statements about this request message are correct?',
+      code: REQ,
+      options: ['The first line is the request line: method, URL path and HTTP version', 'The parameters after `?` are passed in the URL, which GET allows', 'The empty `\\r\\n` line marks the end of the header lines', 'Because it is GET, form data is also in the entity body'],
+      answer: [0, 1, 2],
+      why: 'GET has an empty entity body; POST is the method that carries form data in the body. `Accept-Language: fr` asks for content negotiation (a French version, if the server has one).' },
+    { id: 'e-15', topic: 'http', kind: 'concept',
+      q: 'What does HTTP/2 change compared with HTTP/1.1?',
+      options: ['It splits objects into frames and interleaves them on one connection', 'It uses priorities to influence the order of delivery', 'It replaces HTTP methods and status codes with a new binary set', 'It runs over UDP instead of TCP to avoid head-of-line blocking'],
+      answer: [0, 1],
+      why: 'HTTP/2 keeps methods, status codes and most headers, and still runs over TCP. HTTP/3 is the version that uses QUIC over UDP. HTTP/2 also originally introduced server push.' },
+    { id: 'e-16', topic: 'http', kind: 'concept',
+      q: 'According to the lecture, after QUIC how many transport-layer protocols does the Internet have, and what is QUIC?',
+      options: ['Two; QUIC is an app-layer sublayer over UDP', 'Three: TCP, UDP and QUIC as an equal peer', 'One: QUIC has replaced TCP for all traffic', 'Two: QUIC and UDP, since TCP is now legacy'],
+      answer: 0,
+      why: 'QUIC implements reliability and congestion control (mirroring TCP\'s algorithms) on top of UDP, in the application layer.' },
+    { id: 'e-17', topic: 'http', kind: 'scenario',
+      q: 'A client reconnects to a QUIC server it used yesterday and sends encrypted request data in its very first flight. What makes this possible?',
+      options: ['0-RTT resumption with a cached TLS session ticket', 'Yesterday\'s TCP connection is still open and reused', 'QUIC skips encryption entirely for returning clients', 'The local DNS server cached the server\'s private keys'],
+      answer: 0,
+      why: 'At the end of the first connection the server sends a session ticket; the client uses it to encrypt and authenticate data at the start of the next one, with zero handshake delay.' },
+
+    /* ---------- DNS ---------- */
+    { id: 'e-18', topic: 'dns', kind: 'scenario',
+      q: 'In the iterative-resolution example (host at engineering.nyu.edu looking up gaia.cs.umass.edu), who sends the query to the .edu TLD server?',
+      options: ['The local DNS server, dns.nyu.edu', 'The requesting host', 'The root server', 'The authoritative server for umass.edu'],
+      answer: 0,
+      why: 'The host asks its local server (recursive); the local server then queries root, TLD and authoritative servers itself (iterative), each replying "ask this server next."' },
+    { id: 'e-19', topic: 'dns', kind: 'code',
+      q: 'Given these resource records, what IP address does www.example.com resolve to?',
+      code: RR,
+      options: ['192.0.2.10', 'The address of ns1.example.com', 'The address of mail.example.com', 'It has no address, because it is only an alias'],
+      answer: 0,
+      why: 'The CNAME says www.example.com is an alias for web.example.com, and the A record maps web.example.com to 192.0.2.10. NS names the authoritative DNS server; MX names the mail server.' },
+    { id: 'e-20', topic: 'dns', kind: 'scenario',
+      q: 'A website moves to a new IP address, but some users keep reaching the old one for a while. What is the likely cause?',
+      options: ['Resolvers still serve cached records until the TTL expires', 'Routers remember the old address forever after first use', 'Root servers refuse updates to existing hostnames for a week', 'Browsers store the IP address inside the HTTP Host header'],
+      answer: 0,
+      why: 'Every resource record has a TTL; cached mappings are kept, and served as non-authoritative answers, until it runs out.' },
+    { id: 'e-21', topic: 'dns', kind: 'concept',
+      q: 'A browser resolves www.example.com. Which of these does the DNS reply **not** give it?',
+      options: ['The port number to connect to', 'An IP address for the host', 'The canonical name, if www.example.com is an alias', 'Possibly several addresses for a replicated server'],
+      answer: 0,
+      why: 'DNS maps names to addresses (and aliases, mail servers). The port comes from the URL or the protocol\'s default (80 or 443).' },
+
+    /* ---------- Email ---------- */
+    { id: 'e-22', topic: 'email', kind: 'scenario',
+      q: 'In the six-step example where Alice emails Bob, which step uses SMTP between two mail servers?',
+      options: ['Alice\'s server opens TCP to Bob\'s server and transfers it', 'Alice\'s user agent hands the message to her own mail server', 'Bob\'s mail server places the message in Bob\'s mailbox', 'Bob\'s user agent fetches and displays the message for Bob'],
+      answer: 0,
+      why: 'Server-to-server transfer is SMTP\'s core job. (Alice\'s user agent can also use SMTP, or HTTP for webmail, to reach her own server; Bob uses IMAP or HTTP to read.)' },
+    { id: 'e-23', topic: 'email', kind: 'code',
+      q: 'An SMTP client has just opened its TCP connection to the server. What is the first thing it sees from the server?',
+      options: ['`220` service ready', '`250 Hello`, after the client greets', '`354 Enter mail`, inviting the body', '`221` closing connection'],
+      answer: 0,
+      why: 'The server greets first with 220. The client then sends HELO, and the server answers 250.' },
+    { id: 'e-24', topic: 'email', kind: 'concept',
+      q: 'Which statements comparing SMTP and HTTP are correct?',
+      options: ['Both use ASCII commands answered with a code and phrase', 'SMTP pushes mail from the sending server to the receiver', 'Bob uses SMTP to fetch his mail from his own server', 'SMTP message bodies are ASCII characters only', 'Both run over UDP, using ports 25 and 80 respectively'],
+      answer: [0, 1, 3],
+      why: 'SMTP is strictly a push protocol and isn\'t used to retrieve mail (that\'s IMAP or HTTP). Both SMTP and HTTP run over TCP.' },
+    { id: 'e-25', topic: 'email', kind: 'scenario',
+      q: 'Alice writes an email in the Gmail web page and sends it to Bob, who uses a different provider. Which protocols carry it?',
+      options: ['HTTP to her server, then SMTP server to server', 'SMTP from Alice\'s browser straight to Bob\'s mail server', 'IMAP from Alice\'s mail server across to Bob\'s server', 'DNS, which carries the message body inside an MX reply'],
+      answer: 0,
+      why: 'Webmail user agents talk HTTP to their own server; servers relay to each other with SMTP. (DNS is used to find Bob\'s mail server, via an MX record, but doesn\'t carry the mail.)' },
+
+    /* ---------- Socket programming ---------- */
+    { id: 'e-26', topic: 'sockets', kind: 'code',
+      q: 'Two clients send requests to this server at almost the same moment. What happens?',
+      code: UDPS,
+      options: ['Both reach the same socket; each `recvfrom()` returns its own sender', 'The second client is refused until the first request is finished', 'The server automatically creates a new socket for each client', 'The two replies get swapped, because both clients share the socket'],
+      answer: 0,
+      why: 'One UDP socket serves every client. The source address returned by `recvfrom()` is the per-message return address.' },
+    { id: 'e-27', topic: 'sockets', kind: 'scenario',
+      q: 'A student changes the UDP client\'s socket to `SOCK_STREAM` but keeps `sendto()` and never calls `connect()`. What should they expect?',
+      options: ['It fails: a TCP socket must `connect()` before sending', 'It works exactly as before, since `sendto()` names the server', 'The data goes out as UDP anyway, because `sendto()` is a UDP call', 'The server notices the data and connects back to the client'],
+      answer: 0,
+      why: 'TCP is connection-oriented: the client must `connect()` to the server\'s welcoming socket first, then `send()` bytes into the connection.' },
+    { id: 'e-28', topic: 'sockets', kind: 'code',
+      q: 'This server closes `connectionSocket` after each reply. Can another client still connect afterwards?',
+      code: TCPS,
+      options: ['Yes: the welcoming socket stays open and `accept()` runs again', 'No: closing any socket shuts down the whole server process for good', 'Only if the next client switches to UDP, which needs no connection', 'Only after the server program is restarted, which re-creates the socket'],
+      answer: 0,
+      why: 'Closing a connection socket ends that one TCP connection; the welcoming socket keeps listening on port 12000.' },
+    { id: 'e-29', topic: 'sockets', kind: 'concept',
+      q: 'Which call appears in UDPServer but not in UDPClient, and why?',
+      options: ['`bind()`, to give the server a fixed, known port', '`recvfrom()`, because clients can never receive data', '`socket()`, because clients use the OS\'s default socket', '`sendto()`, because only servers ever send replies'],
+      answer: 0,
+      why: 'Both programs create sockets and call `sendto()`/`recvfrom()`. The client lets the OS pick its port; the server must be at a known one (12000).' },
+    { id: 'e-30', topic: 'sockets', kind: 'concept',
+      q: 'Which statements about the textbook\'s socket programs are correct?',
+      options: ['The TCP server uses a welcoming socket plus a new connection socket per client', 'The UDP server uses one socket for all its clients', 'UDP `recvfrom()` returns the sender\'s address along with the data', 'TCP `send()` must attach the destination address to every message'],
+      answer: [0, 1, 2],
+      why: 'Once a TCP connection exists, `send()` just drops bytes into it; only UDP\'s `sendto()` attaches a destination address.' },
+
+    /* ---------- Multiplexing and demultiplexing ---------- */
+    { id: 'e-31', topic: 'transport', kind: 'concept',
+      q: 'In the household analogy, Ann and Bill go on vacation and Susan and Harvey, who sometimes lose letters, take over. What does this represent?',
+      options: ['Different transport protocols with different service models', 'A failure of the network layer between the two houses', 'A change in both houses\' street addresses (IP addresses)', 'Routers on the path dropping packets during congestion'],
+      answer: 0,
+      why: 'Ann and Bill are the transport layer; the postal service is the network layer. Both pairs of cousins use the same postal service but give different service, as TCP and UDP do over the same IP.' },
+    { id: 'e-32', topic: 'transport', kind: 'scenario',
+      q: 'Must a TCP server create a new process for every connection?',
+      options: ['No: one process can handle many connection sockets', 'Yes: each socket must belong to its own separate process', 'Yes, but only web servers using HTTP have this rule', 'No, because a TCP server only ever has one socket'],
+      answer: 0,
+      why: 'Connection sockets and processes don\'t have to be one-to-one. High-performance web servers often run one process and a thread per connection.' },
+    { id: 'e-33', topic: 'transport', kind: 'scenario',
+      q: 'Host C opens two HTTP connections to server B (port 80) from source ports 26145 and 7532. Host A independently opens one from source port 26145. Can B tell all three connections apart?',
+      options: ['Yes: those two differ in source IP', 'No: two of them share source port 26145', 'Only if B uses a different server port for A', 'Only if all three connections used UDP instead'],
+      answer: 0,
+      why: 'TCP demultiplexes on the full four-tuple, so a shared source port is fine when the source IPs differ.' },
+    { id: 'e-34', topic: 'transport', kind: 'scenario',
+      q: 'Client C\'s UDP socket uses source port 5775 to send to server B\'s socket on port 6428. What ports does B\'s reply carry?',
+      options: ['Source 6428, destination 5775', 'Source 5775, destination 6428', 'Source 6428, destination 6428', 'Source 9157, destination 5775'],
+      answer: 0,
+      why: 'The request\'s source port is the return address: the server copies it into the reply\'s destination port and uses its own port as the source.' },
+    { id: 'e-35', topic: 'transport', kind: 'concept',
+      q: 'A connection-request segment arrives for port 12000. Which values does the server\'s transport layer record to identify the new connection socket?',
+      options: ['The source port in the segment', 'The source host\'s IP address', 'The destination port in the segment', 'The server\'s own IP address', 'The length of the first application message'],
+      answer: [0, 1, 2, 3],
+      why: 'These four values form the connection\'s identity; every later segment whose four values match is demultiplexed to that socket.' },
+
+    /* ---------- UDP ---------- */
+    { id: 'e-36', topic: 'udp', kind: 'calc',
+      q: 'Compute the UDP checksum for the two 16-bit words `1010101111001101` and `0110010011100011`.',
+      options: ['`1110111101001110`', '`0001000010110001`', '`1110111101001111`', '`0001000010110000`'],
+      answer: 0,
+      why: 'Sum = 1 0001000010110000 (overflow). Wrap the carry: 0001000010110000 + 1 = 0001000010110001. Complement: `1110111101001110`. The third choice forgets the wraparound.' },
+    { id: 'e-37', topic: 'udp', kind: 'calc',
+      q: 'The lecture\'s three data words and their checksum `1011010100111101` are sent. In transit, one bit of the first data word flips. What does the receiver find?',
+      options: ['Not all 1s, so an error is detected', 'Still all 1s, so no error is detected', 'The checksum corrects the flipped bit', 'It can\'t check without asking the sender'],
+      answer: 0,
+      why: 'Without errors, data words plus checksum sum to 1111111111111111. A single flipped bit changes the sum, so a 0 appears. (Compensating flips in two words could hide an error; one flip can\'t.)' },
+    { id: 'e-38', topic: 'udp', kind: 'calc',
+      q: 'A UDP segment carries a 20-byte message. About what fraction of the segment is header?',
+      options: ['About 29%', 'About 40%', 'About 8%', 'About 71%'],
+      answer: 0,
+      why: 'Header 8 bytes out of 28 total: 8 / 28 ≈ 0.29. Very small messages have high overhead relative to their data.' },
+    { id: 'e-39', topic: 'udp', kind: 'concept',
+      q: 'Why is UDP sometimes called a "thin" protocol layer?',
+      options: ['It adds little to IP beyond ports and a checksum', 'Its header has no fields, so it is thinner than IP\'s', 'It is meant to run only on thin-client terminals', 'It strips the IP header to save space in transit'],
+      answer: 0,
+      why: 'UDP gives applications IP\'s best-effort semantics plus OS-independent identification of applications (ports) and a checksum.' },
+    { id: 'e-40', topic: 'udp', kind: 'scenario',
+      q: 'Why is DNS usually run over UDP?',
+      options: ['There is no connection-setup delay before the query', 'A query and its reply each fit in a single message', 'If no reply comes, the client can resend or try another server', 'UDP guarantees the reply arrives, so DNS needs no retries'],
+      answer: [0, 1, 2],
+      why: 'Avoiding TCP\'s handshake is the main reason DNS would be much slower over TCP. Reliability, when needed, comes from the application retrying.' },
+
+    /* ---------- rdt1.0 – rdt3.0 ---------- */
+    { id: 'e-41', topic: 'rdt', kind: 'scenario',
+      q: 'An rdt2.1 receiver is in "Wait for 0 from below" and receives a corrupted packet. What does it do?',
+      options: ['Sends a NAK and stays in the same state', 'Sends an ACK and moves to "Wait for 1"', 'Delivers the data and sends a NAK', 'Does nothing'],
+      answer: 0,
+      why: 'rdt2.1 still uses NAKs for corrupted packets and ACKs for duplicates. Corrupted data is never delivered.' },
+    { id: 'e-42', topic: 'rdt', kind: 'scenario',
+      q: 'An rdt3.0 sender is in "Wait for ACK0" and receives a **corrupted** ACK. What does it do?',
+      options: ['Nothing (Λ); the timer handles recovery', 'Retransmits packet 0 immediately, like rdt2.2', 'Moves to "Wait for call 1 from above"', 'Stops the timer, since an ACK has arrived'],
+      answer: 0,
+      why: 'In rdt3.0, a corrupted ACK or an ACK for the wrong number causes no action; recovery is left to the timeout. (rdt2.2, which has no timer, retransmits immediately.)' },
+    { id: 'e-43', topic: 'rdt', kind: 'scenario',
+      q: 'An rdt3.0 sender has received ACK0 and is in "Wait for call 1 from above" when a late duplicate ACK0 arrives. What happens?',
+      options: ['It is ignored (Λ)', 'The sender retransmits packet 0', 'The sender sends packet 1 right away without data from above', 'The protocol resets to its initial state'],
+      answer: 0,
+      why: 'The sender has nothing outstanding, so any arriving ACK is ignored. This is how premature timeouts and delayed ACKs are absorbed.' },
+    { id: 'e-44', topic: 'rdt', kind: 'calc',
+      q: 'Stop-and-wait with L = 12,000 bits, R = 100 Mbps and RTT = 20 ms. What is the sender utilization?',
+      options: ['About 0.006', 'About 0.06', 'About 0.0006', 'About 0.6'],
+      answer: 0,
+      why: 'L/R = 12,000 / 10⁸ = 0.12 ms. U = 0.12 / (20 + 0.12) = 0.12 / 20.12 ≈ 0.006.' },
+    { id: 'e-45', topic: 'rdt', kind: 'concept',
+      q: 'Which statements about rdt3.0\'s timer are correct?',
+      options: ['Start the timer every time a packet is sent, including retransmissions', 'Stop the timer when the correct ACK arrives', 'On timeout, retransmit the current packet and restart the timer', 'The timeout must equal the exact worst-case delay, or the protocol fails'],
+      answer: [0, 1, 2],
+      why: 'The timeout is chosen so that loss is likely, not guaranteed. Too-early timeouts only cause duplicates, which sequence numbers already handle.' },
+
+    /* ---------- Pipelining, GBN, SR ---------- */
+    { id: 'e-46', topic: 'pipeline', kind: 'concept',
+      q: 'Why is cumulative acknowledgment a natural fit for the Go-Back-N receiver?',
+      options: ['It delivers strictly in order, so "ACK n" covers everything up to n', 'It buffers every packet, so it can acknowledge them all at once', 'Its ACKs are never lost, so one ACK per window is enough', 'It keeps one timer per packet, which needs cumulative ACKs'],
+      answer: 0,
+      why: 'The GBN receiver only tracks the next expected sequence number, so "ACK n" means everything up to n.' },
+    { id: 'e-47', topic: 'pipeline', kind: 'code',
+      q: 'In this Selective Repeat trace, what happens when ack2 finally arrives at the sender?',
+      code: SR_TRACE,
+      options: ['send_base jumps to 6 (3–5 were already ACKed); pkt6–9 can be sent', 'send_base moves to 3 only, one packet at a time as usual', 'The sender retransmits pkt3, pkt4 and pkt5 to be safe', 'Nothing happens, because ack2 is treated as a duplicate'],
+      answer: 0,
+      why: 'This is the slide\'s "what happens when ack2 arrives?" When the base is ACKed, the window moves forward to the next unacknowledged packet, 6, giving a window of 6–9.' },
+    { id: 'e-48', topic: 'pipeline', kind: 'calc',
+      q: 'Window N = 5. Packets 0–4 are sent; only packet 1 is lost and every ACK gets through. When packet 1\'s timer expires, how many packets does each protocol retransmit?',
+      options: ['GBN 4, SR 1', 'GBN 1, SR 1', 'GBN 5, SR 4', 'GBN 4, SR 4'],
+      answer: 0,
+      why: 'GBN resends 1, 2, 3, 4 (all sent but not cumulatively ACKed). SR has individual ACKs for 0, 2, 3, 4 and resends only 1.' },
+    { id: 'e-49', topic: 'pipeline', kind: 'calc',
+      q: 'A Selective Repeat sender uses a 4-bit sequence number. What is the largest window that avoids confusing new packets with retransmissions?',
+      options: ['8', '16', '15', '4'],
+      answer: 0,
+      why: '4 bits gives 16 sequence numbers (0–15); the window can be at most half of that, 8.' },
+    { id: 'e-50', topic: 'pipeline', kind: 'concept',
+      q: 'Which statements comparing GBN and SR are correct?',
+      options: ['GBN uses a single timer for the oldest unacknowledged packet', 'SR keeps a logical timer for each packet', 'SR\'s receiver acknowledges each correctly received packet individually', 'GBN retransmits only the packet that was lost', 'The GBN receiver presented in class buffers out-of-order packets'],
+      answer: [0, 1, 2],
+      why: 'GBN goes back and resends everything unacknowledged, and its receiver (as presented) discards out-of-order packets. Buffering them is SR\'s job.' }
+  ];
+})();
