@@ -467,3 +467,30 @@ li.formula { list-style: none; margin-left: -1.2em; font-family: var(--mono); fo
 .option.missed .opt-why::before { content: 'Missed. '; color: var(--ok); font-weight: 700; }
 .why-list { font-size: 0.93rem; padding-left: 1.2em; }
 .why-list li { margin-bottom: 0.3em; }
+
+/* ---------- Question readability (quizzes and exam) ---------- */
+.q-meta { font-size: 0.86rem; margin-bottom: 10px; }
+.q-src { font-size: 0.85rem; margin-bottom: 8px; }
+.q-scenario {
+  background: var(--paper-2); border: 1px solid var(--rule); border-radius: var(--radius-s);
+  padding: 12px 16px; margin: 0 0 14px; font-size: 1rem; line-height: 1.6; color: var(--ink);
+}
+.q-scenario p { margin: 0; }
+.q-scenario pre { margin: 10px 0 0; background: var(--code-bg); }
+.q-scenario p + pre { margin-top: 10px; }
+.q-scenario > pre:first-child { margin-top: 0; }
+.q-text { font-size: 1.12rem; font-weight: 400; line-height: 1.6; margin-bottom: 6px; color: var(--ink); }
+.q-text strong, .q-scenario strong { font-weight: 700; }
+.multi-note { margin: 2px 0 6px; font-size: 0.88rem; }
+.options { gap: 12px; margin: 16px 0 18px; }
+.option { padding: 12px 16px; line-height: 1.5; }
+.option .letter { margin-top: 1px; }
+.opt-why { border-top: 1px dashed var(--rule); padding-top: 6px; margin-top: 8px; line-height: 1.45; }
+.feedback { line-height: 1.55; padding: 14px 16px; }
+.feedback strong { margin-bottom: 4px; }
+.exam-q { padding-bottom: 30px; margin-bottom: 30px; }
+@media (max-width: 520px) {
+  .q-text { font-size: 1.05rem; }
+  .q-scenario { padding: 10px 12px; }
+  .option { padding: 10px 12px; }
+}

@@ -82,12 +82,14 @@
     return list.map(i => md(q.options[i])).join('<br>');
   }
 
-  /* Question stem: optional context, text, optional code or trace block. */
+  /* Question stem: scenario (context and/or code) first, then the question itself. */
   function stemHTML(q) {
     let h = q.src ? '<p class="q-src">In class: ' + esc(q.src) + '</p>' : '';
-    h += q.ctx ? '<div class="q-context">' + md(q.ctx) + '</div>' : '';
+    if (q.ctx || q.code) {
+      h += '<div class="q-scenario">' + (q.ctx ? '<p>' + md(q.ctx) + '</p>' : '') +
+        (q.code ? '<pre><code>' + esc(q.code) + '</code></pre>' : '') + '</div>';
+    }
     h += '<div class="q-text">' + md(q.q) + '</div>';
-    if (q.code) h += '<pre><code>' + esc(q.code) + '</code></pre>';
     if (isMulti(q)) h += '<p class="multi-note">Select all that apply.</p>';
     return h;
   }
