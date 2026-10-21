@@ -494,3 +494,42 @@ li.formula { list-style: none; margin-left: -1.2em; font-family: var(--mono); fo
   .q-scenario { padding: 10px 12px; }
   .option { padding: 10px 12px; }
 }
+
+/* ---------- Textbook checks: practice-first layout ---------- */
+.kc-row { grid-template-columns: auto minmax(0, 1fr); }
+.kc-title { font-weight: 700; font-size: 1.05rem; }
+.kc-status { display: block; font-size: 0.88rem; color: var(--ink-2); margin-top: 6px; }
+.kc-status.done { color: var(--ok); font-weight: 700; }
+.kc-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 10px; }
+.kc-actions .btn { padding: 8px 16px; font-size: 0.95rem; }
+.kc-official { font-size: 0.9rem; }
+.kc-warn { font-size: 0.82rem; color: var(--ink-2); margin-left: -8px; }
+.kc-warn::before { content: '('; } .kc-warn::after { content: ')'; }
+.origin-tag { font-size: 0.8rem; font-weight: 700; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 1px 8px; }
+.origin-tag.bank { color: var(--ink-2); border-color: var(--rule); }
+/* Matching questions */
+.match { display: grid; gap: 12px; margin: 16px 0 18px; }
+.match-row { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 8px 14px; align-items: center; background: var(--paper-2); border: 1px solid var(--rule); border-radius: var(--radius-s); padding: 10px 14px; }
+.match-left { font-weight: 700; }
+.match-row select { width: 100%; padding: 8px; line-height: 1.4; }
+.match-why { grid-column: 1 / -1; font-size: 0.9rem; color: var(--ink-2); line-height: 1.45; }
+.match-why:empty { display: none; }
+.match-row.ok { border-color: var(--ok); background: var(--ok-soft); }
+.match-row.no { border-color: var(--bad); background: var(--bad-soft); }
+.miss-note { color: var(--bad); }
+@media (max-width: 620px) { .match-row { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- Read page: collapsible subsections ---------- */
+.notes-bar { margin-top: 6px; }
+.notes-bar .btn { padding: 6px 12px; font-size: 0.9rem; }
+.notes-bar .muted { font-size: 0.9rem; }
+li.collapsible { list-style: none; margin-left: -1.1em; }
+.notes-toggle {
+  font: inherit; color: var(--ink); background: none; border: 0; padding: 2px 0; cursor: pointer; text-align: left;
+  display: inline-flex; align-items: baseline; gap: 8px;
+}
+.notes-toggle::before { content: '▾'; color: var(--accent); font-size: 0.9em; width: 0.9em; display: inline-block; transition: transform 0.15s; }
+.notes-toggle[aria-expanded='false']::before { transform: rotate(-90deg); }
+.notes-toggle:hover { color: var(--accent); }
+li.collapsible > ul { margin-left: 0.2em; }
+.match-row { grid-template-columns: minmax(0, 1fr); gap: 6px; }
