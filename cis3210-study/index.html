@@ -39,7 +39,7 @@
         <ul class="study-list">
           <li><a href="read.html"><span class="name">Read</span><span class="desc">All eleven topics from the slides and Kurose &amp; Ross, with nine step-through demos and a cheat sheet.</span><span class="stat">11 topics</span></a></li>
           <li><a href="review.html"><span class="name">In-class questions</span><span class="desc">The prof's 26 questions from October 1–20, each with a worked answer to open once you've tried it.</span><span class="stat" id="stat-review"></span></a></li>
-          <li><a href="knowledge.html"><span class="name">Textbook checks</span><span class="desc">Practice quizzes for each textbook section you need, with single-answer, select-all and matching questions.</span><span class="stat" id="stat-kc"></span></a></li>
+          <li><a href="knowledge.html"><span class="name">Textbook checks</span><span class="desc">Practice that follows the Kurose &amp; Ross Knowledge Checks for each section, answers checked against the 9th edition, plus extra practice.</span><span class="stat" id="stat-kc"></span></a></li>
           <li><a href="flashcards.html"><span class="name">Flashcards</span><span class="desc">Definitions, header fields, record types, socket calls and protocol rules.</span><span class="stat" id="stat-cards"></span></a></li>
           <li><a href="quiz.html"><span class="name">Topic quizzes</span><span class="desc">Multiple choice by topic, including "select all that apply", with an explanation after every answer.</span><span class="stat" id="stat-quiz"></span></a></li>
           <li><a href="exam.html"><span class="name">Practice exam</span><span class="desc">50 questions, timed, scored by topic and by question type.</span><span class="stat" id="stat-exam"></span></a></li>
@@ -82,7 +82,7 @@
         document.getElementById('date-fact').textContent = S.EXAM_DATE.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }) + '.';
       }
 
-      document.getElementById('stat-kc').textContent = Object.keys(S.store.get('kcProgress', {})).length + ' of 12 completed';
+      document.getElementById('stat-kc').textContent = Object.keys(S.store.get('kcRefProgress', {})).length + ' of 14 completed';
       const known = S.store.get('cardsKnown', []);
       document.getElementById('stat-cards').textContent = known.length + ' of ' + window.FLASHCARDS.length + ' known';
 

@@ -16,20 +16,30 @@
     <div id="list">
       <div class="page-head">
         <h1>Textbook checks</h1>
-        <p>Practice for each Kurose &amp; Ross section your midterm covers. <strong>Practice this topic</strong> runs a short quiz right here: six original questions written for this site in the textbook's style, plus four from your topic quizzes. Every choice gets its own explanation.</p>
+        <p><strong>Knowledge Check practice</strong> follows the Kurose &amp; Ross online Knowledge Checks one question at a time, in their order, for every section your midterm covers. Every choice gets its own explanation. <strong>Extra practice</strong> is the site's own questions for the same section.</p>
       </div>
 
       <div class="review-bar">
-        <div><strong id="done-count">0 of 12</strong> <span class="muted">sections completed</span>
+        <div><strong id="done-count">0 of 14</strong> <span class="muted">Knowledge Check sets completed</span>
           <div class="fc-progress" aria-hidden="true"><span id="done-bar"></span></div></div>
       </div>
 
-      <div class="callout kc-note">
-        <p><strong>Original vs official.</strong> The practice questions here are written for this site and are not the official knowledge checks. The official Kurose &amp; Ross checks are linked under each section, but their site often shows raw code (text starting with <code>&lt;?php</code>) instead of quizzes, so treat those links as optional.</p>
-        <p><strong>Section numbers</strong> follow your 9th-edition PDF. The official site uses an older layout, so its numbers can differ (its 2.7 is your 2.6).</p>
-      </div>
+      <details class="callout kc-note" id="about">
+        <summary><strong>Where these come from</strong></summary>
+        <p><strong>Source.</strong> Each item matches one question from the Kurose &amp; Ross online Knowledge Checks, as transcribed in <a href="https://github.com/daf2a/Computer_Networking_Problemset" target="_blank" rel="noopener">daf2a/Computer_Networking_Problemset</a> (December 2023). That repo's README says 7th edition, but the question set follows the online site's 8th-edition layout (for example, Socket Programming is 2.7 there). Section numbers on this page follow your 9th edition.</p>
+        <p><strong>Wording.</strong> The setups, numbers and correct answers follow the originals; the question text is reworded, because the original wording belongs to the authors. Every answer was checked against the 9th edition, and an <em>answer-key note</em> appears wherever the transcription's key disagrees with it.</p>
+        <p><strong>What each tag means.</strong></p>
+        <ul class="fid-key">
+          <li><span class="fid-tag full">Original choices</span> The original's choices (true/false, matching pairs, or a list in the question) and its answer are both available.</li>
+          <li><span class="fid-tag pool">Shared choice list</span> Sibling questions in the original shared one list; the choices here are their combined answers.</li>
+          <li><span class="fid-tag setup">Choices added</span> The original was a calculation or fill-in; its setup and answer are kept, and the choices were written for this site.</li>
+          <li><span class="fid-tag answer">Choices added</span> Only the original's correct answer is known; the other choices were written for this site.</li>
+        </ul>
+        <p><strong>Your instructor's questions</strong> stay on the <a href="review.html">In-class</a> page and are never mixed in here.</p>
+      </details>
 
       <div id="sections"></div>
+      <div id="not-included"></div>
     </div>
 
     <!-- Practice runner -->
@@ -37,6 +47,7 @@
       <div class="qcard">
         <div class="progress-line" aria-hidden="true"><span id="bar"></span></div>
         <div class="q-meta"><span id="q-pos"></span><span id="q-sec"></span><span id="q-origin"></span></div>
+        <p class="q-concept" id="q-concept"></p>
         <div id="stem"></div>
         <div id="answer-area"></div>
         <div id="feedback"></div>
@@ -56,7 +67,7 @@
         <p class="muted" id="r-sub"></p>
         <div class="btn-row" style="margin:18px 0 30px">
           <button class="btn" type="button" id="retry-missed">Retry the ones I missed</button>
-          <button class="btn secondary" type="button" id="again">Practice this topic again</button>
+          <button class="btn secondary" type="button" id="again">Practice this set again</button>
           <button class="btn quiet" type="button" id="back">All sections</button>
         </div>
         <div id="review"></div>
@@ -67,65 +78,83 @@
   <script src="assets/common.js"></script>
   <script src="data/bank.js"></script>
   <script src="data/kc.js"></script>
+  <script src="data/kc-ref.js"></script>
   <script>
   (function () {
     const S = window.Study;
-    const KC = window.KC;
+    const KC = window.KC;            /* the site's own extra-practice questions */
+    const REF = window.KC_REF;       /* Knowledge Check practice */
     const el = id => document.getElementById(id);
-    const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
     const OFFICIAL = (c, s) => 'https://www-net.cs.umass.edu/kurose_ross/knowledgechecks/problem.php?c=' + c + '&s=' + s;
     const CHAPTERS = { 1: 'Chapter 1: Introduction', 2: 'Chapter 2: Application Layer', 3: 'Chapter 3: Transport Layer' };
-    const EXTRA = [
-      { label: '1.3', title: 'The Network Core', what: 'Packet vs circuit switching, forwarding. Partly in the Week 0 and Week 1 slides.', topic: 'internet', official: [1, 3] },
-      { label: '1.4', title: 'Delay, Loss and Throughput', what: 'Processing, queuing, transmission and propagation delay. The slides only use L/R and RTT.', topic: 'internet', official: [1, 4] },
-      { label: '2.5 (2.6 online)', title: 'Video Streaming and CDNs', what: 'Not in the lectures and not covered on this site.', topic: null, official: [2, 6] }
-    ];
+    const FID = {
+      full: ['full', 'Original choices'],
+      pool: ['pool', 'Shared choice list'],
+      setup: ['setup', 'Choices added'],
+      answer: ['answer', 'Choices added']
+    };
+    const FID_TITLE = {
+      full: 'The original choices and answer are available; the wording is adapted.',
+      pool: 'Choices combined from the answers of sibling original questions that shared one list.',
+      setup: 'Original setup and answer; the original was a calculation or fill-in, so the choices were written for this site.',
+      answer: 'Only the original correct answer is available; the other choices were written for this site.'
+    };
 
     /* ---------- progress ---------- */
-    const prog = () => S.store.get('kcProgress', {});
-    function statusText(key) {
-      const p = prog()[key];
-      if (!p) return '<span class="kc-status">Not started</span>';
-      return '<span class="kc-status done">Completed · best ' + p.best + '/' + p.total + ' · last ' + p.last + '/' + p.total + '</span>';
+    const refProg = () => S.store.get('kcRefProgress', {});
+    const ownProg = () => S.store.get('kcProgress', {});
+    function statusText(p, label) {
+      if (!p) return '<span class="kc-status">' + label + ': not started</span>';
+      return '<span class="kc-status done">' + label + ': best ' + p.best + '/' + p.total + ' · last ' + p.last + '/' + p.total + '</span>';
     }
+    const refItems = key => REF.QUESTIONS.filter(q => q.sec === key).sort((a, b) => a.num - b.num);
 
     /* ---------- section list ---------- */
     function renderList() {
       let h = '';
       [1, 2, 3].forEach(ch => {
         h += '<h2>' + CHAPTERS[ch] + '</h2><ul class="kc-list">';
-        KC.SECTIONS.filter(s => s.chapter === ch).forEach(s => {
-          const done = Boolean(prog()[s.key]);
+        REF.SECTIONS.filter(s => s.chapter === ch).forEach(s => {
+          const items = refItems(s.key);
+          const nFull = items.filter(q => q.fid === 'full' || q.fid === 'pool').length;
+          const own = KC.SECTIONS.find(x => x.key === s.key);
+          const done = Boolean(refProg()[s.key]);
           h += '<li class="kc-row' + (done ? ' is-done' : '') + '">' +
-            '<span class="ex-num">' + S.esc(s.label || s.key) + '</span>' +
-            '<div class="kc-main"><div class="kc-title">' + S.esc(s.title) + '</div>' +
-            '<div class="kc-what">' + S.esc(s.what) + '</div>' + statusText(s.key) +
-            '<div class="kc-actions"><button class="btn" type="button" data-sec="' + s.key + '">Practice this topic</button>' +
-            '<a class="kc-official" href="' + OFFICIAL(s.official[0], s.official[1]) + '" target="_blank" rel="noopener">Official textbook check ↗<span class="visually-hidden"> (opens the UMass site in a new tab)</span></a>' +
-            '<span class="kc-warn">may be unavailable</span></div></div></li>';
+            '<span class="ex-num">' + S.esc(s.key) + '</span>' +
+            '<div class="kc-main"><div class="kc-title">' + S.esc(s.title) +
+              (s.online !== s.key ? ' <span class="kc-online">(' + S.esc(s.online) + ' online)</span>' : '') +
+              (s.reading ? '' : ' <span class="kc-outside">Outside your listed reading</span>') + '</div>' +
+            '<div class="kc-what">' + items.length + ' Knowledge Check questions · ' + nFull + ' with their original choices</div>' +
+            statusText(refProg()[s.key], 'Knowledge Check practice') +
+            (own ? statusText(ownProg()[s.key], 'Extra practice') : '') +
+            '<div class="kc-actions"><button class="btn" type="button" data-ref="' + s.key + '">Knowledge Check practice</button>' +
+              (own ? '<button class="btn secondary" type="button" data-sec="' + s.key + '">Extra practice</button>'
+                   : '<a class="btn secondary" href="quiz.html?topic=internet">Extra practice</a>') +
+              '<a class="kc-official" href="' + OFFICIAL(s.official[0], s.official[1]) + '" target="_blank" rel="noopener">Official check ↗<span class="visually-hidden"> (UMass site, new tab, often unavailable)</span></a>' +
+              '<a class="kc-official" href="' + REF.REPO + '#' + s.anchor + '" target="_blank" rel="noopener">Transcription ↗<span class="visually-hidden"> (GitHub, new tab)</span></a>' +
+            '</div></div></li>';
         });
         h += '</ul>';
       });
-      h += '<h2>Additional: check lecture coverage first</h2><p class="muted">These overlap only partly with the slides, so they are optional.</p><ul class="kc-list">';
-      EXTRA.forEach(s => {
-        h += '<li class="kc-row"><span class="ex-num">' + S.esc(s.label) + '</span><div class="kc-main"><div class="kc-title">' + S.esc(s.title) + '</div>' +
-          '<div class="kc-what">' + S.esc(s.what) + '</div><div class="kc-actions">' +
-          (s.topic ? '<a class="btn secondary" href="quiz.html?topic=' + s.topic + '">Practice this topic</a><span class="kc-warn">opens your ' + S.esc(S.TOPICS[s.topic]) + ' quiz</span>' : '') +
-          '<a class="kc-official" href="' + OFFICIAL(s.official[0], s.official[1]) + '" target="_blank" rel="noopener">Official textbook check ↗</a><span class="kc-warn">may be unavailable</span>' +
-          '</div></div></li>';
-      });
-      h += '</ul>';
       el('sections').innerHTML = h;
-      el('sections').querySelectorAll('button[data-sec]').forEach(b => b.addEventListener('click', () => start(b.dataset.sec)));
-      const n = KC.SECTIONS.filter(s => prog()[s.key]).length;
-      el('done-count').textContent = n + ' of ' + KC.SECTIONS.length;
-      el('done-bar').style.width = (100 * n / KC.SECTIONS.length) + '%';
+      el('sections').querySelectorAll('button[data-ref]').forEach(b => b.addEventListener('click', () => start('ref', b.dataset.ref)));
+      el('sections').querySelectorAll('button[data-sec]').forEach(b => b.addEventListener('click', () => start('own', b.dataset.sec)));
+      const n = REF.SECTIONS.filter(s => refProg()[s.key]).length;
+      el('done-count').textContent = n + ' of ' + REF.SECTIONS.length;
+      el('done-bar').style.width = (100 * n / REF.SECTIONS.length) + '%';
+
+      el('not-included').innerHTML = '<h2>Not included</h2>' +
+        '<p class="muted">These Knowledge Check sections are outside the midterm\'s coverage:</p><ul class="notes">' +
+        REF.EXCLUDED.map(x => '<li>' + S.esc(x[0]) + ' ' + S.esc(x[1]) + (x[2] ? ' (' + x[2] + ' questions)' : '') + '</li>').join('') + '</ul>' +
+        '<p class="muted">Left out of covered sections:</p><ul class="notes">' +
+        REF.SKIPPED.map(x => '<li>' + S.esc(x.sec) + ' question ' + x.num + ': ' + S.esc(x.why) + '</li>').join('') + '</ul>';
     }
 
     /* ---------- runner ---------- */
-    let sec = null, full = false, list = [], idx = 0, answered = false, order = [], picked = new Set(), results = [];
+    let mode = 'ref', sec = null, full = false, list = [], idx = 0, answered = false, order = [], picked = new Set(), results = [];
 
-    function buildSet(key) {
+    function buildOwn(key) {
       const s = KC.SECTIONS.find(x => x.key === key);
       const own = KC.QUESTIONS.filter(q => q.sec === key).map(q => Object.assign({ origin: 'own' }, q));
       const extra = S.shuffle(window.QUIZ_BANK.filter(q => q.topic === s.topic)).slice(0, 4)
@@ -133,13 +162,23 @@
       return S.shuffle(own.concat(extra));
     }
 
-    function start(key, questions) {
-      sec = KC.SECTIONS.find(x => x.key === key);
+    function start(m, key, questions) {
+      mode = m;
+      sec = (m === 'ref' ? REF.SECTIONS : KC.SECTIONS).find(x => x.key === key);
       full = !questions;
-      list = questions || buildSet(key);
+      list = questions || (m === 'ref' ? refItems(key).map(q => Object.assign({ origin: 'ref' }, q)) : buildOwn(key));
       idx = 0; results = [];
       el('list').hidden = true; el('results').hidden = true; el('runner').hidden = false;
       show(); window.scrollTo(0, 0);
+    }
+
+    function originTag(q) {
+      if (q.origin === 'ref') {
+        const s = REF.SECTIONS.find(x => x.key === q.sec);
+        return '<span class="origin-tag">Knowledge Check ' + S.esc(s.online) + ' · Q' + q.num + '</span> ' +
+          '<span class="fid-tag ' + FID[q.fid][0] + '" title="' + S.esc(FID_TITLE[q.fid]) + '">' + FID[q.fid][1] + '</span>';
+      }
+      return q.origin === 'own' ? '<span class="origin-tag bank">Extra practice: written for this site</span>' : '<span class="origin-tag bank">From your topic quiz</span>';
     }
 
     function show() {
@@ -147,10 +186,10 @@
       answered = false; picked = new Set();
       el('bar').style.width = (100 * idx / list.length) + '%';
       el('q-pos').textContent = 'Question ' + (idx + 1) + ' of ' + list.length;
-      el('q-sec').textContent = (sec.label || sec.key) + ' ' + sec.title;
-      el('q-origin').innerHTML = q.origin === 'own'
-        ? '<span class="origin-tag">Original practice question</span>'
-        : '<span class="origin-tag bank">From your topic quiz</span>';
+      el('q-sec').textContent = sec.key + ' ' + sec.title;
+      el('q-origin').innerHTML = originTag(q);
+      el('q-concept').innerHTML = q.concept ? '<span class="muted">Concept:</span> ' + S.esc(q.concept) : '';
+      el('q-concept').hidden = !q.concept;
       el('stem').innerHTML = S.stemHTML(q) + (q.type === 'match' ? '<p class="multi-note">Choose a match for each item.</p>' : '');
       el('feedback').innerHTML = '';
       el('next').hidden = true;
@@ -182,6 +221,8 @@
       el('answer-area').querySelectorAll('.option').forEach((b, j) => b.setAttribute('aria-checked', String(picked.has(j))));
       el('check').disabled = picked.size === 0;
     }
+
+    const noteHTML = q => q.note ? '<div class="key-note"><strong>Answer-key note.</strong> ' + S.md(q.note) + '</div>' : '';
 
     function check() {
       if (answered) return;
@@ -215,7 +256,7 @@
       results.push({ q: q, chosen: chosen, ok: ok });
       const head = ok ? 'Correct.' : (q.type === 'match' ? 'Not quite. Check the rows marked in red.' : 'Not quite.');
       const body = q.why ? S.md(q.why) : (q.type === 'match' ? 'Each row above explains its match.' : 'Each choice above explains why it is right or wrong.');
-      el('feedback').innerHTML = '<div class="feedback ' + (ok ? 'ok' : 'no') + '" role="status"><strong>' + head + '</strong>' + body + '</div>';
+      el('feedback').innerHTML = '<div class="feedback ' + (ok ? 'ok' : 'no') + '" role="status"><strong>' + head + '</strong>' + body + '</div>' + noteHTML(q);
       el('check').hidden = true;
       el('next').hidden = false;
       el('next').textContent = idx === list.length - 1 ? 'See results' : 'Next question';
@@ -231,14 +272,15 @@
     function finish() {
       el('runner').hidden = true; el('results').hidden = false;
       const score = results.filter(r => r.ok).length, total = results.length;
-      el('r-title').textContent = (sec.label || sec.key) + ' ' + sec.title;
+      el('r-title').textContent = sec.key + ' ' + sec.title + (mode === 'ref' ? ': Knowledge Check practice' : ': extra practice');
       el('r-score').textContent = score + ' / ' + total;
       el('r-sub').textContent = Math.round(100 * score / total) + '%. ' + (score === total ? 'Perfect.' : 'Review the misses below, then retry them.');
-      /* Completion means finishing the full section set, not a retry of missed questions. */
+      /* Completion means finishing the full set, not a retry of missed questions. */
       if (full) {
-        const all = prog(), p = all[sec.key] || { best: 0 };
+        const keyName = mode === 'ref' ? 'kcRefProgress' : 'kcProgress';
+        const all = S.store.get(keyName, {}), p = all[sec.key] || { best: 0 };
         all[sec.key] = { best: Math.max(p.best || 0, score), last: score, total: total, when: Date.now() };
-        S.store.set('kcProgress', all);
+        S.store.set(keyName, all);
       }
       const missed = results.filter(r => !r.ok);
       el('retry-missed').hidden = missed.length === 0;
@@ -248,7 +290,8 @@
         if (q.type === 'match') detail = '<ul class="why-list">' + q.pairs.map((p, i) => '<li>' + S.md(p[0]) + ' → ' + S.esc(p[1]) + (r.chosen[i] !== p[1] ? ' <span class="miss-note">(you chose "' + S.esc(r.chosen[i]) + '")</span>' : '') + '. ' + S.md(q.explain[i]) + '</li>').join('') + '</ul>';
         else detail = '<p><strong>Your answer:</strong><br>' + S.answerText(q, r.chosen) + '</p><p><strong>Correct:</strong><br>' + S.answerText(q, q.answer) + '</p>' +
           (q.explain ? '<ul class="why-list">' + q.options.map((o, i) => '<li>' + S.md(o) + ': ' + S.md(q.explain[i]) + '</li>').join('') + '</ul>' : '<div class="feedback ok">' + S.md(q.why) + '</div>');
-        return '<div class="exam-q">' + S.stemHTML(q) + detail + '</div>';
+        return '<div class="exam-q">' + (q.origin === 'ref' ? '<p class="q-src">Knowledge Check ' + S.esc(REF.SECTIONS.find(x => x.key === q.sec).online) + ' · Q' + q.num + '</p>' : '') +
+          S.stemHTML(q) + detail + noteHTML(q) + '</div>';
       }).join('') : '<p>No misses. Nice work.</p>';
       window.scrollTo(0, 0);
     }
@@ -258,12 +301,13 @@
     el('next').addEventListener('click', next);
     el('quit').addEventListener('click', back);
     el('back').addEventListener('click', back);
-    el('again').addEventListener('click', () => start(sec.key));
-    el('retry-missed').addEventListener('click', () => start(sec.key, S.shuffle(results.filter(r => !r.ok).map(r => r.q))));
+    el('again').addEventListener('click', () => start(mode, sec.key));
+    el('retry-missed').addEventListener('click', () => start(mode, sec.key, S.shuffle(results.filter(r => !r.ok).map(r => r.q))));
     document.addEventListener('keydown', e => {
       if (el('runner').hidden) return;
       if (e.target.closest && e.target.closest('select')) return;
-      const k = LETTERS.indexOf(e.key.toUpperCase()) >= 0 ? LETTERS.indexOf(e.key.toUpperCase()) : ['1', '2', '3', '4', '5', '6'].indexOf(e.key);
+      const up = e.key.toUpperCase();
+      const k = LETTERS.indexOf(up) >= 0 ? LETTERS.indexOf(up) : ['1', '2', '3', '4', '5', '6', '7', '8'].indexOf(e.key);
       if (k >= 0 && !answered && e.key.length === 1) { e.preventDefault(); choose(k); }
       else if (e.key === 'Enter') {
         if (!answered && !el('check').hidden && !el('check').disabled) { e.preventDefault(); check(); }
@@ -272,8 +316,9 @@
     });
 
     renderList();
-    const want = new URLSearchParams(window.location.search).get('section');
-    if (want && KC.SECTIONS.some(s => s.key === want)) start(want);
+    const params = new URLSearchParams(window.location.search);
+    const want = params.get('section');
+    if (want && REF.SECTIONS.some(s => s.key === want)) start(params.get('mode') === 'extra' && KC.SECTIONS.some(s => s.key === want) ? 'own' : 'ref', want);
   })();
   </script>
 </body>

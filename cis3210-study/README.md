@@ -4,7 +4,7 @@ A static study site for CIS*3210 Computer Networks (Fall 2026, Sajid Marhon), co
 
 - **Read** (`read.html`): eleven topics from the slides and Kurose & Ross (Ch. 1, 2.1–2.4, 2.6, 3.1–3.4), a cheat sheet, and nine step-through demos (encapsulation, DNS resolution, HTTP RTT counting, head-of-line blocking, demultiplexing, the UDP checksum, rdt3.0, utilization, Go-Back-N vs Selective Repeat).
 - **In-class questions** (`review.html`): the prof's 26 questions from October 1–20, each with a worked answer hidden until you open it, and a done checklist.
-- **Textbook checks** (`knowledge.html`): a practice quiz for each of the 12 textbook sections the midterm covers: 6 original questions per section (single-answer, select-all, matching, scenario; data in `data/kc.js`) plus 4 drawn from the topic quizzes, with an explanation for every choice. Completion is recorded when you finish a section. Links to the official Kurose & Ross knowledge checks are kept as a secondary option.
+- **Textbook checks** (`knowledge.html`): **Knowledge Check practice** for 14 sections (1.1–1.5, 2.1–2.4, 2.6, 3.1–3.4): 96 items, one for each Kurose & Ross online Knowledge Check question in those sections, in the original order (data in `data/kc-ref.js`). Setups, numbers and correct answers follow the originals; the wording is the site's own. Each item names its source question, says how much of the original was available, and carries an answer-key note where the 9th edition disagrees with the transcription's key. **Extra practice** keeps the site's earlier questions (6 per section in `data/kc.js`, plus 4 from the topic quizzes). The prof's in-class questions are never mixed in.
 - **Flashcards** (`flashcards.html`): 113 cards by topic. Marks the ones you know.
 - **Quizzes** (`quiz.html`): 168 questions by topic (142 topic questions plus the 26 in-class questions turned into quiz form), with an explanation after each answer. About one in five are "select all that apply", and those explain every choice after you answer.
 - **Practice exam** (`exam.html`): 50 questions with a 60- or 75-minute timer, or none. Exam A is 50 questions not used anywhere else; Exam B draws 50 from the quiz bank; Exam C is all 26 in-class questions plus 24 others. Results are broken down by topic and question type.
@@ -57,6 +57,8 @@ python3 -m http.server 8000
 ## Editing content
 
 - Flashcards: `data/flashcards.js`
+- Knowledge Check practice: `data/kc-ref.js`
+- Extra practice (Textbook checks page): `data/kc.js`
 - Quiz questions: `data/bank.js`
 - Practice Exam A: `data/exam.js`
 - In-class questions (quiz versions and worked answers): `data/review.js`
@@ -66,3 +68,17 @@ Each question has `id`, `topic`, `kind` (`concept`, `scenario`, `calc` or `code`
 Topic keys: `intro`, `internet`, `apps`, `http`, `dns`, `email`, `sockets`, `transport`, `udp`, `rdt`, `pipeline`, `review`.
 
 The site uses Atkinson Hyperlegible and JetBrains Mono from Google Fonts and falls back to system fonts offline.
+
+## Knowledge Check source and reuse permission
+
+The Knowledge Check items follow the questions in [daf2a/Computer_Networking_Problemset](https://github.com/daf2a/Computer_Networking_Problemset), a transcription of the official checks at gaia.cs.umass.edu/kurose_ross/knowledgechecks. The repo has no license, and copying the checks there does not give anyone reuse rights; the questions belong to the authors (Kurose and Ross) and their publisher.
+
+What this site publishes: reworded questions, choices and explanations written for the site, figures redrawn from the numbers in each setup, facts and numbers, links, and two short quotes of the transcription's answer key inside answer-key notes.
+
+Needs permission before it can be published here:
+- the original question wording (all 96 items, plus 1.3 Q5 and 2.2 Q14–15, which are left out)
+- the original answer-choice wording
+- the 12 original figure images in the transcription's `img/knowledge` folder
+- any text or figures from the textbook itself
+
+The authors invite comments at kurose@cs.umass.edu.
