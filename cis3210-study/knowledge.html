@@ -12,87 +12,268 @@
 <body data-page="knowledge">
   <header id="site-header"></header>
   <main>
-    <div class="page-head">
-      <h1>Textbook knowledge checks</h1>
-      <p>Kurose and Ross publish short online quizzes for each textbook section. The prof reportedly took exam questions from them last year. These are links to the authors' site: the questions live there, not on this site, and this site can't see or check your answers.</p>
+    <!-- Section list -->
+    <div id="list">
+      <div class="page-head">
+        <h1>Textbook checks</h1>
+        <p>Practice for each Kurose &amp; Ross section your midterm covers. <strong>Practice this topic</strong> runs a short quiz right here: six original questions written for this site in the textbook's style, plus four from your topic quizzes. Every choice gets its own explanation.</p>
+      </div>
+
+      <div class="review-bar">
+        <div><strong id="done-count">0 of 12</strong> <span class="muted">sections completed</span>
+          <div class="fc-progress" aria-hidden="true"><span id="done-bar"></span></div></div>
+      </div>
+
+      <div class="callout kc-note">
+        <p><strong>Original vs official.</strong> The practice questions here are written for this site and are not the official knowledge checks. The official Kurose &amp; Ross checks are linked under each section, but their site often shows raw code (text starting with <code>&lt;?php</code>) instead of quizzes, so treat those links as optional.</p>
+        <p><strong>Section numbers</strong> follow your 9th-edition PDF. The official site uses an older layout, so its numbers can differ (its 2.7 is your 2.6).</p>
+      </div>
+
+      <div id="sections"></div>
     </div>
 
-    <div class="review-bar">
-      <div><strong id="done-count">0 of 12</strong> <span class="muted">essential sections marked done</span>
-        <div class="fc-progress" aria-hidden="true"><span id="done-bar"></span></div></div>
+    <!-- Practice runner -->
+    <div id="runner" hidden>
+      <div class="qcard">
+        <div class="progress-line" aria-hidden="true"><span id="bar"></span></div>
+        <div class="q-meta"><span id="q-pos"></span><span id="q-sec"></span><span id="q-origin"></span></div>
+        <div id="stem"></div>
+        <div id="answer-area"></div>
+        <div id="feedback"></div>
+        <div class="btn-row">
+          <button class="btn" type="button" id="check" hidden>Check answer</button>
+          <button class="btn" type="button" id="next" hidden>Next question</button>
+          <button class="btn quiet" type="button" id="quit">Back to sections</button>
+        </div>
+      </div>
     </div>
 
-    <div class="callout kc-note">
-      <p><strong>If a link shows code instead of questions:</strong> the authors' site sometimes sends its raw program file (text starting with <code>&lt;?php</code>) instead of the quiz. That's a problem on their server; try again later. Meanwhile, each row links to this site's own quiz on the same topic. Those are separate questions written for this site, not the textbook's.</p>
-      <p><strong>Section numbers:</strong> the knowledge-check site uses an older chapter layout. Its 2.7 Socket Programming is section 2.6 in your 9th-edition PDF, and its 2.5 (peer-to-peer) and 2.6 (video and CDNs) aren't in your lectures.</p>
+    <!-- Results -->
+    <div id="results" hidden>
+      <div class="qcard">
+        <h1 id="r-title">Section complete</h1>
+        <p class="score-big" id="r-score"></p>
+        <p class="muted" id="r-sub"></p>
+        <div class="btn-row" style="margin:18px 0 30px">
+          <button class="btn" type="button" id="retry-missed">Retry the ones I missed</button>
+          <button class="btn secondary" type="button" id="again">Practice this topic again</button>
+          <button class="btn quiet" type="button" id="back">All sections</button>
+        </div>
+        <div id="review"></div>
+      </div>
     </div>
-
-    <div id="kc"></div>
   </main>
 
   <script src="assets/common.js"></script>
+  <script src="data/bank.js"></script>
+  <script src="data/kc.js"></script>
   <script>
   (function () {
     const S = window.Study;
-    const BASE = 'https://www-net.cs.umass.edu/kurose_ross/knowledgechecks/problem.php';
-    const url = (c, s) => BASE + '?c=' + c + '&s=' + s;
-    /* [chapter, section, title, what it checks, local topic, local topic label] */
-    const ESSENTIAL = [
-      ['Chapter 1: Introduction', [
-        [1, 1, 'What Is the Internet?', 'Nuts-and-bolts vs services view; what a protocol is.', 'internet'],
-        [1, 2, 'The Network Edge', 'Hosts, access networks, physical media.', 'internet'],
-        [1, 5, 'Protocol Layers and Their Service Models', 'The five layers, encapsulation, which layer does what.', 'intro']
-      ]],
-      ['Chapter 2: Application Layer', [
-        [2, 1, 'Principles of Network Applications', 'Client-server vs P2P, sockets, what apps need from TCP and UDP.', 'apps'],
-        [2, 2, 'The Web and HTTP', 'Statelessness, persistent connections and RTTs, messages. Also cookies and web caching, which weren\'t in the slides.', 'http'],
-        [2, 3, 'Email', 'SMTP vs HTTP, commands, transfer and retrieval.', 'email'],
-        [2, 4, 'The Domain Name System: DNS', 'Root, TLD, authoritative and local servers; iterative vs recursive; caching; records.', 'dns'],
-        [2, 7, 'Socket Programming (2.6 in your PDF)', 'UDP vs TCP sockets; sendto, recvfrom, connect, listen, accept.', 'sockets']
-      ]],
-      ['Chapter 3: Transport Layer', [
-        [3, 1, 'Introduction and Transport-Layer Services', 'Process-to-process vs host-to-host; TCP and UDP services; best-effort IP.', 'transport'],
-        [3, 2, 'Multiplexing and Demultiplexing', 'Ports, the UDP two-tuple, the TCP four-tuple.', 'transport'],
-        [3, 3, 'Connectionless Transport: UDP', 'Header, checksum, message boundaries, no reliability.', 'udp'],
-        [3, 4, 'Principles of Reliable Data Transfer', 'rdt1.0–3.0, sequence numbers, timers, stop-and-wait, GBN, SR.', 'rdt']
-      ]]
-    ];
+    const KC = window.KC;
+    const el = id => document.getElementById(id);
+    const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const OFFICIAL = (c, s) => 'https://www-net.cs.umass.edu/kurose_ross/knowledgechecks/problem.php?c=' + c + '&s=' + s;
+    const CHAPTERS = { 1: 'Chapter 1: Introduction', 2: 'Chapter 2: Application Layer', 3: 'Chapter 3: Transport Layer' };
     const EXTRA = [
-      [1, 3, 'The Network Core', 'Packet vs circuit switching, forwarding. The ideas appear in the Week 0 and Week 1 slides; the details may go further.', 'internet'],
-      [1, 4, 'Delay, Loss and Throughput', 'Processing, queuing, transmission and propagation delay. The slides only use L/R and RTT.', 'internet'],
-      [2, 6, 'Video Streaming and CDNs', 'Not in the lectures and not covered on this site. Only do it if it turns out to be assigned.', null]
+      { label: '1.3', title: 'The Network Core', what: 'Packet vs circuit switching, forwarding. Partly in the Week 0 and Week 1 slides.', topic: 'internet', official: [1, 3] },
+      { label: '1.4', title: 'Delay, Loss and Throughput', what: 'Processing, queuing, transmission and propagation delay. The slides only use L/R and RTT.', topic: 'internet', official: [1, 4] },
+      { label: '2.5 (2.6 online)', title: 'Video Streaming and CDNs', what: 'Not in the lectures and not covered on this site.', topic: null, official: [2, 6] }
     ];
 
-    let done = new Set(S.store.get('kcDone', []));
-    function row(r) {
-      const key = r[0] + '.' + r[1];
-      const local = r[4] ? '<a href="quiz.html?topic=' + r[4] + '">This site\'s quiz: ' + S.esc(S.TOPICS[r[4]]) + '</a>' : '<span class="muted">No matching quiz here</span>';
-      return '<li class="kc-row" data-kc="' + key + '">' +
-        '<span class="ex-num">' + key + '</span>' +
-        '<div class="kc-main"><a class="kc-title" href="' + url(r[0], r[1]) + '" target="_blank" rel="noopener">' + S.esc(r[2]) + ' <span aria-hidden="true">↗</span><span class="visually-hidden"> (opens the textbook site in a new tab)</span></a>' +
-        '<div class="kc-what">' + S.esc(r[3]) + '</div><div class="kc-local">' + local + '</div></div>' +
-        '<label class="ex-done"><input type="checkbox"> Done</label></li>';
+    /* ---------- progress ---------- */
+    const prog = () => S.store.get('kcProgress', {});
+    function statusText(key) {
+      const p = prog()[key];
+      if (!p) return '<span class="kc-status">Not started</span>';
+      return '<span class="kc-status done">Completed · best ' + p.best + '/' + p.total + ' · last ' + p.last + '/' + p.total + '</span>';
     }
-    document.getElementById('kc').innerHTML =
-      ESSENTIAL.map(ch => '<h2>' + S.esc(ch[0]) + '</h2><ul class="kc-list">' + ch[1].map(row).join('') + '</ul>').join('') +
-      '<h2>Additional: check lecture coverage first</h2><p class="muted">These sections overlap only partly with the slides, so they are optional.</p><ul class="kc-list">' + EXTRA.map(row).join('') + '</ul>';
 
-    const essentialKeys = ESSENTIAL.reduce((a, ch) => a.concat(ch[1].map(r => r[0] + '.' + r[1])), []);
-    function update() {
-      document.querySelectorAll('.kc-row').forEach(li => {
-        const on = done.has(li.dataset.kc);
-        li.classList.toggle('is-done', on); li.querySelector('input').checked = on;
+    /* ---------- section list ---------- */
+    function renderList() {
+      let h = '';
+      [1, 2, 3].forEach(ch => {
+        h += '<h2>' + CHAPTERS[ch] + '</h2><ul class="kc-list">';
+        KC.SECTIONS.filter(s => s.chapter === ch).forEach(s => {
+          const done = Boolean(prog()[s.key]);
+          h += '<li class="kc-row' + (done ? ' is-done' : '') + '">' +
+            '<span class="ex-num">' + S.esc(s.label || s.key) + '</span>' +
+            '<div class="kc-main"><div class="kc-title">' + S.esc(s.title) + '</div>' +
+            '<div class="kc-what">' + S.esc(s.what) + '</div>' + statusText(s.key) +
+            '<div class="kc-actions"><button class="btn" type="button" data-sec="' + s.key + '">Practice this topic</button>' +
+            '<a class="kc-official" href="' + OFFICIAL(s.official[0], s.official[1]) + '" target="_blank" rel="noopener">Official textbook check ↗<span class="visually-hidden"> (opens the UMass site in a new tab)</span></a>' +
+            '<span class="kc-warn">may be unavailable</span></div></div></li>';
+        });
+        h += '</ul>';
       });
-      const n = essentialKeys.filter(k => done.has(k)).length;
-      document.getElementById('done-count').textContent = n + ' of ' + essentialKeys.length;
-      document.getElementById('done-bar').style.width = (100 * n / essentialKeys.length) + '%';
+      h += '<h2>Additional: check lecture coverage first</h2><p class="muted">These overlap only partly with the slides, so they are optional.</p><ul class="kc-list">';
+      EXTRA.forEach(s => {
+        h += '<li class="kc-row"><span class="ex-num">' + S.esc(s.label) + '</span><div class="kc-main"><div class="kc-title">' + S.esc(s.title) + '</div>' +
+          '<div class="kc-what">' + S.esc(s.what) + '</div><div class="kc-actions">' +
+          (s.topic ? '<a class="btn secondary" href="quiz.html?topic=' + s.topic + '">Practice this topic</a><span class="kc-warn">opens your ' + S.esc(S.TOPICS[s.topic]) + ' quiz</span>' : '') +
+          '<a class="kc-official" href="' + OFFICIAL(s.official[0], s.official[1]) + '" target="_blank" rel="noopener">Official textbook check ↗</a><span class="kc-warn">may be unavailable</span>' +
+          '</div></div></li>';
+      });
+      h += '</ul>';
+      el('sections').innerHTML = h;
+      el('sections').querySelectorAll('button[data-sec]').forEach(b => b.addEventListener('click', () => start(b.dataset.sec)));
+      const n = KC.SECTIONS.filter(s => prog()[s.key]).length;
+      el('done-count').textContent = n + ' of ' + KC.SECTIONS.length;
+      el('done-bar').style.width = (100 * n / KC.SECTIONS.length) + '%';
     }
-    document.querySelectorAll('.kc-row input').forEach(inp => inp.addEventListener('change', e => {
-      const k = e.target.closest('.kc-row').dataset.kc;
-      if (e.target.checked) done.add(k); else done.delete(k);
-      S.store.set('kcDone', Array.from(done)); update();
-    }));
-    update();
+
+    /* ---------- runner ---------- */
+    let sec = null, full = false, list = [], idx = 0, answered = false, order = [], picked = new Set(), results = [];
+
+    function buildSet(key) {
+      const s = KC.SECTIONS.find(x => x.key === key);
+      const own = KC.QUESTIONS.filter(q => q.sec === key).map(q => Object.assign({ origin: 'own' }, q));
+      const extra = S.shuffle(window.QUIZ_BANK.filter(q => q.topic === s.topic)).slice(0, 4)
+        .map(q => Object.assign({ origin: 'bank', type: Array.isArray(q.answer) ? 'multi' : 'single' }, q));
+      return S.shuffle(own.concat(extra));
+    }
+
+    function start(key, questions) {
+      sec = KC.SECTIONS.find(x => x.key === key);
+      full = !questions;
+      list = questions || buildSet(key);
+      idx = 0; results = [];
+      el('list').hidden = true; el('results').hidden = true; el('runner').hidden = false;
+      show(); window.scrollTo(0, 0);
+    }
+
+    function show() {
+      const q = list[idx];
+      answered = false; picked = new Set();
+      el('bar').style.width = (100 * idx / list.length) + '%';
+      el('q-pos').textContent = 'Question ' + (idx + 1) + ' of ' + list.length;
+      el('q-sec').textContent = (sec.label || sec.key) + ' ' + sec.title;
+      el('q-origin').innerHTML = q.origin === 'own'
+        ? '<span class="origin-tag">Original practice question</span>'
+        : '<span class="origin-tag bank">From your topic quiz</span>';
+      el('stem').innerHTML = S.stemHTML(q) + (q.type === 'match' ? '<p class="multi-note">Choose a match for each item.</p>' : '');
+      el('feedback').innerHTML = '';
+      el('next').hidden = true;
+      if (q.type === 'match') {
+        const rights = S.shuffle(q.pairs.map(p => p[1]).concat(q.extra || []));
+        el('answer-area').innerHTML = '<div class="match">' + q.pairs.map((p, i) =>
+          '<div class="match-row" data-i="' + i + '"><label class="match-left" for="m' + i + '">' + S.md(p[0]) + '</label>' +
+          '<select id="m' + i + '"><option value="">Choose…</option>' + rights.map(r => '<option>' + S.esc(r) + '</option>').join('') + '</select>' +
+          '<div class="match-why"></div></div>').join('') + '</div>';
+        el('answer-area').querySelectorAll('select').forEach(s => s.addEventListener('change', () => {
+          el('check').disabled = Array.from(el('answer-area').querySelectorAll('select')).some(x => !x.value);
+        }));
+        el('check').hidden = false; el('check').disabled = true;
+      } else {
+        order = S.optionOrder(q);
+        const multi = q.type === 'multi';
+        el('answer-area').innerHTML = '<div class="options" role="' + (multi ? 'group' : 'radiogroup') + '" aria-label="Answer choices">' +
+          order.map((oi, k) => '<button class="option' + (multi ? ' multi' : '') + '" type="button" role="' + (multi ? 'checkbox' : 'radio') + '" aria-checked="false" data-k="' + k + '"><span class="letter">' + LETTERS[k] + '</span><span>' + S.md(q.options[oi]) + '</span></button>').join('') + '</div>';
+        el('answer-area').querySelectorAll('.option').forEach(b => b.addEventListener('click', () => choose(Number(b.dataset.k))));
+        el('check').hidden = !multi; el('check').disabled = true;
+      }
+    }
+
+    function choose(k) {
+      const q = list[idx];
+      if (answered || q.type === 'match' || k >= order.length) return;
+      if (q.type === 'single') { picked = new Set([k]); check(); return; }
+      if (picked.has(k)) picked.delete(k); else picked.add(k);
+      el('answer-area').querySelectorAll('.option').forEach((b, j) => b.setAttribute('aria-checked', String(picked.has(j))));
+      el('check').disabled = picked.size === 0;
+    }
+
+    function check() {
+      if (answered) return;
+      const q = list[idx];
+      let ok, chosen;
+      if (q.type === 'match') {
+        const sels = Array.from(el('answer-area').querySelectorAll('select'));
+        if (sels.some(s => !s.value)) return;
+        chosen = sels.map(s => s.value);
+        ok = chosen.every((v, i) => v === q.pairs[i][1]);
+        el('answer-area').querySelectorAll('.match-row').forEach((row, i) => {
+          const right = chosen[i] === q.pairs[i][1];
+          row.classList.add(right ? 'ok' : 'no');
+          row.querySelector('select').disabled = true;
+          row.querySelector('.match-why').innerHTML = (right ? '<strong>Correct.</strong> ' : '<strong>Not quite:</strong> it matches "' + S.esc(q.pairs[i][1]) + '". ') + S.md(q.explain[i]);
+        });
+      } else {
+        if (!picked.size) return;
+        chosen = q.type === 'multi' ? Array.from(picked).map(k => order[k]) : order[Array.from(picked)[0]];
+        ok = S.isCorrect(q, chosen);
+        el('answer-area').querySelectorAll('.option').forEach((b, j) => {
+          b.disabled = true;
+          const right = S.isRightOption(q, order[j]);
+          if (right && picked.has(j)) b.classList.add('correct');
+          else if (right) b.classList.add(q.type === 'multi' ? 'missed' : 'correct');
+          else if (picked.has(j)) b.classList.add('wrong');
+          if (q.explain) b.lastElementChild.insertAdjacentHTML('beforeend', '<span class="opt-why">' + S.md(q.explain[order[j]]) + '</span>');
+        });
+      }
+      answered = true;
+      results.push({ q: q, chosen: chosen, ok: ok });
+      const head = ok ? 'Correct.' : (q.type === 'match' ? 'Not quite. Check the rows marked in red.' : 'Not quite.');
+      const body = q.why ? S.md(q.why) : (q.type === 'match' ? 'Each row above explains its match.' : 'Each choice above explains why it is right or wrong.');
+      el('feedback').innerHTML = '<div class="feedback ' + (ok ? 'ok' : 'no') + '" role="status"><strong>' + head + '</strong>' + body + '</div>';
+      el('check').hidden = true;
+      el('next').hidden = false;
+      el('next').textContent = idx === list.length - 1 ? 'See results' : 'Next question';
+      el('next').focus();
+    }
+
+    function next() {
+      if (!answered) return;
+      if (idx < list.length - 1) { idx++; show(); window.scrollTo(0, 0); }
+      else finish();
+    }
+
+    function finish() {
+      el('runner').hidden = true; el('results').hidden = false;
+      const score = results.filter(r => r.ok).length, total = results.length;
+      el('r-title').textContent = (sec.label || sec.key) + ' ' + sec.title;
+      el('r-score').textContent = score + ' / ' + total;
+      el('r-sub').textContent = Math.round(100 * score / total) + '%. ' + (score === total ? 'Perfect.' : 'Review the misses below, then retry them.');
+      /* Completion means finishing the full section set, not a retry of missed questions. */
+      if (full) {
+        const all = prog(), p = all[sec.key] || { best: 0 };
+        all[sec.key] = { best: Math.max(p.best || 0, score), last: score, total: total, when: Date.now() };
+        S.store.set('kcProgress', all);
+      }
+      const missed = results.filter(r => !r.ok);
+      el('retry-missed').hidden = missed.length === 0;
+      el('review').innerHTML = missed.length ? '<h2>Review what you missed</h2>' + missed.map(r => {
+        const q = r.q;
+        let detail;
+        if (q.type === 'match') detail = '<ul class="why-list">' + q.pairs.map((p, i) => '<li>' + S.md(p[0]) + ' → ' + S.esc(p[1]) + (r.chosen[i] !== p[1] ? ' <span class="miss-note">(you chose "' + S.esc(r.chosen[i]) + '")</span>' : '') + '. ' + S.md(q.explain[i]) + '</li>').join('') + '</ul>';
+        else detail = '<p><strong>Your answer:</strong><br>' + S.answerText(q, r.chosen) + '</p><p><strong>Correct:</strong><br>' + S.answerText(q, q.answer) + '</p>' +
+          (q.explain ? '<ul class="why-list">' + q.options.map((o, i) => '<li>' + S.md(o) + ': ' + S.md(q.explain[i]) + '</li>').join('') + '</ul>' : '<div class="feedback ok">' + S.md(q.why) + '</div>');
+        return '<div class="exam-q">' + S.stemHTML(q) + detail + '</div>';
+      }).join('') : '<p>No misses. Nice work.</p>';
+      window.scrollTo(0, 0);
+    }
+
+    function back() { el('runner').hidden = true; el('results').hidden = true; el('list').hidden = false; renderList(); window.scrollTo(0, 0); }
+    el('check').addEventListener('click', check);
+    el('next').addEventListener('click', next);
+    el('quit').addEventListener('click', back);
+    el('back').addEventListener('click', back);
+    el('again').addEventListener('click', () => start(sec.key));
+    el('retry-missed').addEventListener('click', () => start(sec.key, S.shuffle(results.filter(r => !r.ok).map(r => r.q))));
+    document.addEventListener('keydown', e => {
+      if (el('runner').hidden) return;
+      if (e.target.closest && e.target.closest('select')) return;
+      const k = LETTERS.indexOf(e.key.toUpperCase()) >= 0 ? LETTERS.indexOf(e.key.toUpperCase()) : ['1', '2', '3', '4', '5', '6'].indexOf(e.key);
+      if (k >= 0 && !answered && e.key.length === 1) { e.preventDefault(); choose(k); }
+      else if (e.key === 'Enter') {
+        if (!answered && !el('check').hidden && !el('check').disabled) { e.preventDefault(); check(); }
+        else if (answered && document.activeElement !== el('next')) { e.preventDefault(); next(); }
+      }
+    });
+
+    renderList();
+    const want = new URLSearchParams(window.location.search).get('section');
+    if (want && KC.SECTIONS.some(s => s.key === want)) start(want);
   })();
   </script>
 </body>

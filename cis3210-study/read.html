@@ -15,6 +15,11 @@
     <div class="page-head">
       <h1>Read</h1>
       <p>Everything from the slides, in lecture order, with the textbook filling the gaps. Each section names its sources. The blue-edged boxes are demos you can step through.</p>
+      <div class="btn-row notes-bar">
+        <button class="btn quiet" type="button" id="collapse-all">Collapse all subsections</button>
+        <button class="btn quiet" type="button" id="expand-all">Expand all</button>
+        <span class="muted">Click any subsection title to fold it.</span>
+      </div>
     </div>
 
     <div class="reading">
@@ -886,6 +891,26 @@ while True:
     }
     document.addEventListener('scroll', mark, { passive: true });
     mark();
+
+    /* Collapsible subsections: each top-level bullet with a nested list becomes a toggle. */
+    const toggles = [];
+    document.querySelectorAll('ul.notes > li').forEach((li, n) => {
+      const sub = li.querySelector(':scope > ul');
+      if (!sub) return;
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'notes-toggle';
+      btn.setAttribute('aria-expanded', 'true');
+      sub.id = sub.id || 'sub-' + n;
+      btn.setAttribute('aria-controls', sub.id);
+      while (li.firstChild && li.firstChild !== sub) btn.appendChild(li.firstChild);
+      li.insertBefore(btn, sub);
+      li.classList.add('collapsible');
+      const set = open => { btn.setAttribute('aria-expanded', String(open)); sub.hidden = !open; };
+      btn.addEventListener('click', () => set(btn.getAttribute('aria-expanded') !== 'true'));
+      toggles.push(set);
+    });
+    document.getElementById('collapse-all').addEventListener('click', () => toggles.forEach(f => f(false)));
+    document.getElementById('expand-all').addEventListener('click', () => toggles.forEach(f => f(true)));
   })();
   </script>
 </body>
