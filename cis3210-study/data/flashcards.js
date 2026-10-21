@@ -77,7 +77,7 @@ window.FLASHCARDS = [
   { topic: 'email', front: 'Why relay through Alice\'s server?', back: 'Her server is always on, so it can queue the message and retry if Bob\'s server is unreachable. Bob\'s mailbox is on an always-on server for the same reason.' },
 
   /* Sockets */
-  { topic: 'sockets', front: 'Open vs proprietary application', back: '**Open**: follows a published protocol (RFC), so independent developers can interoperate, using its well-known port. **Proprietary**: one team writes both sides and must **avoid** well-known ports.' },
+  { topic: 'sockets', front: 'Open vs proprietary application', back: '**Open**: follows a published protocol (RFC), so independent developers can interoperate; it should use the protocol\'s well-known port. **Proprietary**: one team writes both sides and should **avoid** well-known ports.' },
   { topic: 'sockets', front: '`AF_INET`, `SOCK_DGRAM`, `SOCK_STREAM`', back: '`AF_INET` = IPv4. `SOCK_DGRAM` = UDP socket. `SOCK_STREAM` = TCP socket.' },
   { topic: 'sockets', front: 'UDP client calls', back: '`socket(AF_INET, SOCK_DGRAM)` → `sendto(msg, (serverName, serverPort))` → `recvfrom(2048)` → `close()`. No bind: the OS picks the client\'s port.' },
   { topic: 'sockets', front: 'UDP server calls', back: '`socket(AF_INET, SOCK_DGRAM)` → `bind((\'\', 12000))` → loop: `recvfrom()` gives the message and clientAddress → `sendto(reply, clientAddress)`.' },
