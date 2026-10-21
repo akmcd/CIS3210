@@ -87,7 +87,7 @@ window.FLASHCARDS = [
   { topic: 'sockets', front: 'What the OS attaches automatically', back: 'The **source** IP address and port of each packet. With UDP, the app attaches the **destination** to every message; with TCP, `connect()` fixes it.' },
 
   /* Transport / mux-demux */
-  { topic: 'transport', front: 'Transport vs network layer', back: '**Transport**: logical communication between **processes**. **Network**: logical communication between **hosts**. Transport runs only in end systems; routers ignore transport headers.' },
+  { topic: 'transport', front: 'Transport vs network layer', back: '**Transport**: logical communication between **processes**. **Network**: logical communication between **hosts**. Transport runs only in end systems; ordinary router forwarding doesn\'t use transport headers.' },
   { topic: 'transport', front: 'Household analogy', back: 'Houses = hosts, kids = processes, letters = messages, **Ann and Bill** = transport protocol, **postal service** = network layer. Susan and Harvey (who lose letters) = a different service model.' },
   { topic: 'transport', front: 'What transport can and can\'t add over IP', back: '**Can\'t** guarantee delay or bandwidth if the network can\'t. **Can** add reliable delivery (handling loss, corruption, duplication) and security (encryption).' },
   { topic: 'transport', front: 'IP service model', back: 'Best-effort host-to-host delivery: no guarantee of delivery, order, or integrity. "Unreliable."' },

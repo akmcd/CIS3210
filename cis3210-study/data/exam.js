@@ -47,7 +47,7 @@ rcv ack2 -> ?`;
       q: 'A router in the middle of the path receives a frame carrying [Hl | Hn | Ht | M]. What does it do?',
       options: ['Strips Hl, forwards using Hn, wraps it in a new frame; Ht untouched', 'Reads Ht to find which process on the destination should get it', 'Removes all the headers, then rebuilds the message for the next hop', 'Forwards the frame unchanged, reading only the link header Hl'],
       answer: 0,
-      why: 'Routers implement physical, link and network layers. They act on network-layer fields and never inspect the transport segment inside.' },
+      why: 'Routers implement physical, link and network layers. They forward using network-layer fields; ordinary forwarding doesn\'t need the transport segment inside.' },
     { id: 'e-3', topic: 'intro', kind: 'concept',
       q: 'In the airline analogy, baggage **check** at the source pairs with baggage **claim** at the destination. What does this illustrate?',
       options: ['A layer acts at its own level; the peer layer at the far end matches it', 'Each layer must understand how every other layer does its work', 'Only the bottom layer does anything useful; the rest are bookkeeping', 'Layers at the source and destination must use different protocols'],
@@ -57,6 +57,7 @@ rcv ack2 -> ?`;
       q: 'Which statements describe packet switching?',
       options: ['Users share network resources', 'Each packet includes a destination address', 'A dedicated circuit is reserved for each conversation', 'Network devices use forwarding information to deliver packets', 'Data is divided into small packets'],
       answer: [0, 1, 3, 4],
+      explain: ['Yes: resources are shared packet by packet.', 'Yes: each packet is addressed.', 'No: that is circuit switching.', 'Yes: devices forward using their forwarding information.', 'Yes: data is split into packets.'],
       why: 'Packet switching sends data without a dedicated circuit, using store-and-forward. Reserving a circuit is circuit switching, as in the old telephone network.' },
 
     /* ---------- Internetworking ---------- */
@@ -69,6 +70,7 @@ rcv ack2 -> ?`;
       q: 'One commercial router could connect all four of an organization\'s networks, but the organization uses several routers. Why?',
       options: ['Load balancing and better performance', 'Redundancy, so one router isn\'t a single point of failure', 'A router can never connect more than two networks, so several are required', 'With several paths, protocol software can reroute around a failure'],
       answer: [0, 1, 3],
+      explain: ['Yes: traffic can be spread across routers.', 'Yes: one failure doesn\'t cut everything off.', 'No: commercial routers can connect more than two networks.', 'Yes: protocol software reroutes when a network or router fails.'],
       why: 'Commercial routers can connect more than two networks. Multiple routers are a design choice balancing reliability, capacity and cost.' },
     { id: 'e-7', topic: 'internet', kind: 'calc',
       q: 'A host sends a 1,250,000-byte file as packets into a 10 Mbps link. Ignoring headers and gaps between packets, how long does it take to push all the bits into the link?',
@@ -84,8 +86,9 @@ rcv ack2 -> ?`;
     /* ---------- Application architectures and transport services ---------- */
     { id: 'e-9', topic: 'apps', kind: 'concept',
       q: 'Which are drawbacks of peer-to-peer architectures?',
-      options: ['Peers come and go (intermittent availability)', 'Peers\' IP addresses change', 'Decentralization makes management harder', 'An always-on central server is required'],
+      options: ['Peers come and go (intermittent availability)', 'Peers\' IP addresses change', 'Decentralization makes management harder', 'Every peer needs a fixed, well-known IP address'],
       answer: [0, 1, 2],
+      explain: ['Yes: a drawback of using user devices.', 'Yes: peers can be hard to reach again.', 'Yes: no central point of control.', 'No: that is a client-server server\'s trait; peers usually have changing addresses.'],
       why: 'P2P needs no always-on server. That is a strength, along with self-scaling and lower cost.' },
     { id: 'e-10', topic: 'apps', kind: 'scenario',
       q: 'A trading app must never lose an order but can tolerate an extra 100 ms of delay. Which requirement drives its transport choice?',
@@ -114,11 +117,13 @@ rcv ack2 -> ?`;
       code: REQ,
       options: ['The first line is the request line: method, URL path and HTTP version', 'The parameters after `?` are passed in the URL, which GET allows', 'The empty `\\r\\n` line marks the end of the header lines', 'Because it is GET, form data is also in the entity body'],
       answer: [0, 1, 2],
+      explain: ['Yes: GET, the path with its parameters, and HTTP/1.1.', 'Yes: GET can carry parameters in the URL.', 'Yes: the blank line ends the headers.', 'No: a GET body is empty; POST carries form data in the body.'],
       why: 'GET has an empty entity body; POST is the method that carries form data in the body. `Accept-Language: fr` asks for content negotiation (a French version, if the server has one).' },
     { id: 'e-15', topic: 'http', kind: 'concept',
       q: 'What does HTTP/2 change compared with HTTP/1.1?',
       options: ['It splits objects into frames and interleaves them on one connection', 'It uses priorities to influence the order of delivery', 'It replaces HTTP methods and status codes with a new binary set', 'It runs over UDP instead of TCP to avoid head-of-line blocking'],
       answer: [0, 1],
+      explain: ['Yes: frames are interleaved over one connection.', 'Yes: priorities influence order.', 'No: HTTP/2 keeps methods, status codes and most headers.', 'No: HTTP/2 still runs over TCP; HTTP/3 uses QUIC over UDP.'],
       why: 'HTTP/2 keeps methods, status codes and most headers, and still runs over TCP. HTTP/3 is the version that uses QUIC over UDP. HTTP/2 also originally introduced server push.' },
     { id: 'e-16', topic: 'http', kind: 'concept',
       q: 'According to the lecture, after QUIC how many transport-layer protocols does the Internet have, and what is QUIC?',
@@ -167,8 +172,9 @@ rcv ack2 -> ?`;
       why: 'The server greets first with 220. The client then sends HELO, and the server answers 250.' },
     { id: 'e-24', topic: 'email', kind: 'concept',
       q: 'Which statements comparing SMTP and HTTP are correct?',
-      options: ['Both use ASCII commands answered with a code and phrase', 'SMTP pushes mail from the sending server to the receiver', 'Bob uses SMTP to fetch his mail from his own server', 'SMTP message bodies are ASCII characters only', 'Both run over UDP, using ports 25 and 80 respectively'],
+      options: ['Both use ASCII commands answered with a code and phrase', 'SMTP pushes mail from the sending server to the receiver', 'Bob uses SMTP to fetch his mail from his own server', 'SMTP message bodies are ASCII characters only', 'SMTP is mainly a pull protocol, like HTTP'],
       answer: [0, 1, 3],
+      explain: ['Yes: both are command/response protocols.', 'Yes: SMTP is strictly a push protocol.', 'No: Bob fetches with IMAP or HTTP.', 'Yes: per the lecture, the body is ASCII only.', 'No: SMTP pushes; it is HTTP that is mainly pull.'],
       why: 'SMTP is strictly a push protocol and isn\'t used to retrieve mail (that\'s IMAP or HTTP). Both SMTP and HTTP run over TCP.' },
     { id: 'e-25', topic: 'email', kind: 'scenario',
       q: 'Alice writes an email in the Gmail web page and sends it to Bob, who uses a different provider. Which protocols carry it?',
@@ -203,6 +209,7 @@ rcv ack2 -> ?`;
       q: 'Which statements about the textbook\'s socket programs are correct?',
       options: ['The TCP server uses a welcoming socket plus a new connection socket per client', 'The UDP server uses one socket for all its clients', 'UDP `recvfrom()` returns the sender\'s address along with the data', 'TCP `send()` must attach the destination address to every message'],
       answer: [0, 1, 2],
+      explain: ['Yes: welcoming socket plus one connection socket per accept().', 'Yes: one UDP socket serves every client.', 'Yes: that address is the return address.', 'No: after connect(), send() just drops bytes into the connection.'],
       why: 'Once a TCP connection exists, `send()` just drops bytes into it; only UDP\'s `sendto()` attaches a destination address.' },
 
     /* ---------- Multiplexing and demultiplexing ---------- */
@@ -230,6 +237,7 @@ rcv ack2 -> ?`;
       q: 'A connection-request segment arrives for port 12000. Which values does the server\'s transport layer record to identify the new connection socket?',
       options: ['The source port in the segment', 'The source host\'s IP address', 'The destination port in the segment', 'The server\'s own IP address', 'The length of the first application message'],
       answer: [0, 1, 2, 3],
+      explain: ['Yes: part of the four-tuple.', 'Yes: part of the four-tuple.', 'Yes: part of the four-tuple.', 'Yes: part of the four-tuple.', 'No: message length isn\'t part of a socket\'s identity.'],
       why: 'These four values form the connection\'s identity; every later segment whose four values match is demultiplexed to that socket.' },
 
     /* ---------- UDP ---------- */
@@ -255,8 +263,9 @@ rcv ack2 -> ?`;
       why: 'UDP gives applications IP\'s best-effort semantics plus OS-independent identification of applications (ports) and a checksum.' },
     { id: 'e-40', topic: 'udp', kind: 'scenario',
       q: 'Why is DNS usually run over UDP?',
-      options: ['There is no connection-setup delay before the query', 'A query and its reply each fit in a single message', 'If no reply comes, the client can resend or try another server', 'UDP guarantees the reply arrives, so DNS needs no retries'],
+      options: ['There is no connection-setup delay before the query', 'A query and its reply each fit in a single message', 'If no reply comes, the client can resend or try another server', 'UDP\'s checksum lets a lost query be recovered automatically'],
       answer: [0, 1, 2],
+      explain: ['Yes: the main reason; DNS over TCP would be slower.', 'Yes: no need for a byte stream.', 'Yes: the application handles reliability itself.', 'No: the checksum only detects corruption; it can\'t recover a lost message.'],
       why: 'Avoiding TCP\'s handshake is the main reason DNS would be much slower over TCP. Reliability, when needed, comes from the application retrying.' },
 
     /* ---------- rdt1.0 – rdt3.0 ---------- */
@@ -284,6 +293,7 @@ rcv ack2 -> ?`;
       q: 'Which statements about rdt3.0\'s timer are correct?',
       options: ['Start the timer every time a packet is sent, including retransmissions', 'Stop the timer when the correct ACK arrives', 'On timeout, retransmit the current packet and restart the timer', 'The timeout must equal the exact worst-case delay, or the protocol fails'],
       answer: [0, 1, 2],
+      explain: ['Yes: every send, new or repeated.', 'Yes: the packet is confirmed.', 'Yes: retransmission is the universal recovery action.', 'No: it is chosen so loss is likely; early timeouts only cause harmless duplicates.'],
       why: 'The timeout is chosen so that loss is likely, not guaranteed. Too-early timeouts only cause duplicates, which sequence numbers already handle.' },
 
     /* ---------- Pipelining, GBN, SR ---------- */
@@ -312,6 +322,7 @@ rcv ack2 -> ?`;
       q: 'Which statements comparing GBN and SR are correct?',
       options: ['GBN uses a single timer for the oldest unacknowledged packet', 'SR keeps a logical timer for each packet', 'SR\'s receiver acknowledges each correctly received packet individually', 'GBN retransmits only the packet that was lost', 'The GBN receiver presented in class buffers out-of-order packets'],
       answer: [0, 1, 2],
+      explain: ['Yes: one timer for the oldest unACKed packet.', 'Yes: one logical timer per packet.', 'Yes: SR uses individual ACKs.', 'No: GBN resends every sent-but-unACKed packet.', 'No: as presented, GBN discards out-of-order packets.'],
       why: 'GBN goes back and resends everything unacknowledged, and its receiver (as presented) discards out-of-order packets. Buffering them is SR\'s job.' }
   ];
 })();
