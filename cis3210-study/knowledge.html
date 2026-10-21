@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Textbook checks — CIS*3210 Midterm Study</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="knowledge">
+  <header id="site-header"></header>
+  <main>
+    <div class="page-head">
+      <h1>Textbook knowledge checks</h1>
+      <p>Kurose and Ross publish short online quizzes for each textbook section. The prof reportedly took exam questions from them last year. These are links to the authors' site: the questions live there, not on this site, and this site can't see or check your answers.</p>
+    </div>
+
+    <div class="review-bar">
+      <div><strong id="done-count">0 of 12</strong> <span class="muted">essential sections marked done</span>
+        <div class="fc-progress" aria-hidden="true"><span id="done-bar"></span></div></div>
+    </div>
+
+    <div class="callout kc-note">
+      <p><strong>If a link shows code instead of questions:</strong> the authors' site sometimes sends its raw program file (text starting with <code>&lt;?php</code>) instead of the quiz. That's a problem on their server; try again later. Meanwhile, each row links to this site's own quiz on the same topic. Those are separate questions written for this site, not the textbook's.</p>
+      <p><strong>Section numbers:</strong> the knowledge-check site uses an older chapter layout. Its 2.7 Socket Programming is section 2.6 in your 9th-edition PDF, and its 2.5 (peer-to-peer) and 2.6 (video and CDNs) aren't in your lectures.</p>
+    </div>
+
+    <div id="kc"></div>
+  </main>
+
+  <script src="assets/common.js"></script>
+  <script>
+  (function () {
+    const S = window.Study;
+    const BASE = 'https://www-net.cs.umass.edu/kurose_ross/knowledgechecks/problem.php';
+    const url = (c, s) => BASE + '?c=' + c + '&s=' + s;
+    /* [chapter, section, title, what it checks, local topic, local topic label] */
+    const ESSENTIAL = [
+      ['Chapter 1: Introduction', [
+        [1, 1, 'What Is the Internet?', 'Nuts-and-bolts vs services view; what a protocol is.', 'internet'],
+        [1, 2, 'The Network Edge', 'Hosts, access networks, physical media.', 'internet'],
+        [1, 5, 'Protocol Layers and Their Service Models', 'The five layers, encapsulation, which layer does what.', 'intro']
+      ]],
+      ['Chapter 2: Application Layer', [
+        [2, 1, 'Principles of Network Applications', 'Client-server vs P2P, sockets, what apps need from TCP and UDP.', 'apps'],
+        [2, 2, 'The Web and HTTP', 'Statelessness, persistent connections and RTTs, messages. Also cookies and web caching, which weren\'t in the slides.', 'http'],
+        [2, 3, 'Email', 'SMTP vs HTTP, commands, transfer and retrieval.', 'email'],
+        [2, 4, 'The Domain Name System: DNS', 'Root, TLD, authoritative and local servers; iterative vs recursive; caching; records.', 'dns'],
+        [2, 7, 'Socket Programming (2.6 in your PDF)', 'UDP vs TCP sockets; sendto, recvfrom, connect, listen, accept.', 'sockets']
+      ]],
+      ['Chapter 3: Transport Layer', [
+        [3, 1, 'Introduction and Transport-Layer Services', 'Process-to-process vs host-to-host; TCP and UDP services; best-effort IP.', 'transport'],
+        [3, 2, 'Multiplexing and Demultiplexing', 'Ports, the UDP two-tuple, the TCP four-tuple.', 'transport'],
+        [3, 3, 'Connectionless Transport: UDP', 'Header, checksum, message boundaries, no reliability.', 'udp'],
+        [3, 4, 'Principles of Reliable Data Transfer', 'rdt1.0–3.0, sequence numbers, timers, stop-and-wait, GBN, SR.', 'rdt']
+      ]]
+    ];
+    const EXTRA = [
+      [1, 3, 'The Network Core', 'Packet vs circuit switching, forwarding. The ideas appear in the Week 0 and Week 1 slides; the details may go further.', 'internet'],
+      [1, 4, 'Delay, Loss and Throughput', 'Processing, queuing, transmission and propagation delay. The slides only use L/R and RTT.', 'internet'],
+      [2, 6, 'Video Streaming and CDNs', 'Not in the lectures and not covered on this site. Only do it if it turns out to be assigned.', null]
+    ];
+
+    let done = new Set(S.store.get('kcDone', []));
+    function row(r) {
+      const key = r[0] + '.' + r[1];
+      const local = r[4] ? '<a href="quiz.html?topic=' + r[4] + '">This site\'s quiz: ' + S.esc(S.TOPICS[r[4]]) + '</a>' : '<span class="muted">No matching quiz here</span>';
+      return '<li class="kc-row" data-kc="' + key + '">' +
+        '<span class="ex-num">' + key + '</span>' +
+        '<div class="kc-main"><a class="kc-title" href="' + url(r[0], r[1]) + '" target="_blank" rel="noopener">' + S.esc(r[2]) + ' <span aria-hidden="true">↗</span><span class="visually-hidden"> (opens the textbook site in a new tab)</span></a>' +
+        '<div class="kc-what">' + S.esc(r[3]) + '</div><div class="kc-local">' + local + '</div></div>' +
+        '<label class="ex-done"><input type="checkbox"> Done</label></li>';
+    }
+    document.getElementById('kc').innerHTML =
+      ESSENTIAL.map(ch => '<h2>' + S.esc(ch[0]) + '</h2><ul class="kc-list">' + ch[1].map(row).join('') + '</ul>').join('') +
+      '<h2>Additional: check lecture coverage first</h2><p class="muted">These sections overlap only partly with the slides, so they are optional.</p><ul class="kc-list">' + EXTRA.map(row).join('') + '</ul>';
+
+    const essentialKeys = ESSENTIAL.reduce((a, ch) => a.concat(ch[1].map(r => r[0] + '.' + r[1])), []);
+    function update() {
+      document.querySelectorAll('.kc-row').forEach(li => {
+        const on = done.has(li.dataset.kc);
+        li.classList.toggle('is-done', on); li.querySelector('input').checked = on;
+      });
+      const n = essentialKeys.filter(k => done.has(k)).length;
+      document.getElementById('done-count').textContent = n + ' of ' + essentialKeys.length;
+      document.getElementById('done-bar').style.width = (100 * n / essentialKeys.length) + '%';
+    }
+    document.querySelectorAll('.kc-row input').forEach(inp => inp.addEventListener('change', e => {
+      const k = e.target.closest('.kc-row').dataset.kc;
+      if (e.target.checked) done.add(k); else done.delete(k);
+      S.store.set('kcDone', Array.from(done)); update();
+    }));
+    update();
+  })();
+  </script>
+</body>
+</html>

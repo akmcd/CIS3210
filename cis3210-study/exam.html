@@ -336,7 +336,8 @@
           ord.map((oi, k) => {
             const right = S.isRightOption(q, oi), c = chose(oi);
             const cls = right && c ? ' correct' : right ? (S.isMulti(q) ? ' missed' : ' correct') : c ? ' wrong' : '';
-            return '<div class="option' + (S.isMulti(q) ? ' multi' : '') + cls + '"><span class="letter">' + LETTERS[k] + '</span><span>' + S.md(q.options[oi]) + '</span></div>';
+            return '<div class="option' + (S.isMulti(q) ? ' multi' : '') + cls + '"><span class="letter">' + LETTERS[k] + '</span><span>' + S.md(q.options[oi]) +
+              (q.explain ? '<span class="opt-why">' + S.md(q.explain[oi]) + '</span>' : '') + '</span></div>';
           }).join('') +
           '</div><div class="feedback ' + (ok ? 'ok' : 'no') + '"><strong>' + (ok ? 'Correct.' : (!S.answered(mine) ? 'Not answered.' : 'Incorrect.')) + '</strong>' + S.md(q.why) + '</div></section>';
       }).join('');

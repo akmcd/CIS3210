@@ -102,7 +102,7 @@
 <li>Encapsulation:
   <ul>
   <li>Each layer adds its header on the way down and the peer layer removes it on the way up (Matryoshka dolls).</li>
-  <li>A <strong>link-layer switch</strong> processes up to the link layer; a <strong>router</strong> processes up to the network layer and never reads Ht.</li>
+  <li>A <strong>link-layer switch</strong> processes up to the link layer; a <strong>router</strong> processes up to the network layer. Ordinary forwarding doesn't need Ht (middleboxes such as firewalls and NATs do look at it).</li>
   <li>A message split into three segments needs three datagrams and three frames on each link: headers multiply.</li>
   </ul></li>
 </ul>
@@ -181,6 +181,14 @@
   <li>A host splits a message into packets of L bits and sends them at rate R (link capacity, bandwidth).</li>
   <li class="formula">transmission delay = L / R</li>
   <li>Example: 1,500 bytes = 12,000 bits at 100 Mbps → 12,000 / 10⁸ = 120 μs. Two packets back to back take 2L/R.</li>
+  </ul></li>
+<li>The four delays at each hop (textbook 1.4; the slides only use L/R and RTT):
+  <ul>
+  <li><strong>Processing</strong>: examining the header and choosing the output link. Usually microseconds.</li>
+  <li><strong>Queuing</strong>: waiting behind other packets for the link. Varies with traffic.</li>
+  <li><strong>Transmission</strong>: pushing all the bits onto the link, L/R. Depends on packet size and link rate.</li>
+  <li><strong>Propagation</strong>: a bit travelling the length of the link, d/s (distance over signal speed). Depends on distance, not packet size.</li>
+  <li>RTT is the round trip of a small packet, so it is mostly propagation, queuing and processing.</li>
   </ul></li>
 <li>Physical media:
   <ul>
@@ -476,7 +484,7 @@ S: 221 hamburger.edu closing connection</code></pre>
 <!-- ================= 7 ================= -->
 <section id="sockets">
 <h2>7. Socket programming</h2>
-<p class="source">October 6 lecture · Kurose &amp; Ross 2.6 (no separate slide deck was posted)</p>
+<p class="source">October 6 lecture · Kurose &amp; Ross 2.6 in the 9th edition (the online knowledge checks number it 2.7) · no separate slide deck was posted</p>
 <p class="lead">The developer writes the client and server, picks TCP or UDP when creating each socket, and the OS handles everything below the socket.</p>
 <ul class="notes">
 <li>Two kinds of applications:
@@ -581,7 +589,7 @@ while True:
 <li>What transport does:
   <ul>
   <li><strong>Logical communication</strong> between processes: they act as if directly connected.</li>
-  <li>Runs only in end systems. Routers act only on network-layer fields and never inspect transport headers.</li>
+  <li>Runs only in end systems. Routers forward using network-layer fields and don't need transport headers (the slides' simplification; middleboxes like firewalls and NATs do inspect ports).</li>
   <li>Sender: split messages into chunks if needed, add a transport header (making a <strong>segment</strong>), hand it to the network layer.</li>
   <li>Receiver: get the segment from the network layer, process its header, deliver the data to the application.</li>
   <li>Terminology: <strong>segment</strong> for both TCP and UDP; <strong>datagram</strong> is reserved for network-layer packets (the RFCs sometimes call a UDP packet a datagram).</li>
@@ -700,7 +708,7 @@ while True:
   <li><code>udt_send()</code>: called by rdt to send a packet over the unreliable channel.</li>
   <li><code>rdt_rcv()</code>: called when a packet arrives at the receiver side of the channel.</li>
   <li><code>deliver_data()</code>: called by rdt to hand data up at the receiver.</li>
-  <li>One <code>rdt_send</code> must equal exactly one <code>deliver_data</code>, however many <code>udt_send</code>s happen.</li>
+  <li>The goal: each <code>rdt_send</code> leads to exactly one <code>deliver_data</code>, however many <code>udt_send</code>s happen. That's only achievable if the channel eventually lets some packets through.</li>
   </ul></li>
 <li>Finite-state machines (FSMs):
   <ul>
@@ -747,7 +755,7 @@ while True:
 <div class="table-wrap"><table>
 <thead><tr><th>Protocol</th><th>Bit errors</th><th>Packet loss</th><th>Corrupted ACK/NAK</th><th>Out-of-order</th><th>Type</th></tr></thead>
 <tbody>
-<tr><td>rdt1.0</td><td>✕</td><td>✕</td><td>n/a (no feedback)</td><td>✕</td><td>Stop-and-wait</td></tr>
+<tr><td>rdt1.0</td><td>✕</td><td>✕</td><td>n/a (no feedback)</td><td>✕</td><td>Simple transfer: no ACKs, nothing to wait for*</td></tr>
 <tr><td>rdt2.0</td><td>✓</td><td>✕</td><td>✕</td><td>✕</td><td>Stop-and-wait</td></tr>
 <tr><td>rdt2.1</td><td>✓</td><td>✕</td><td>✓ sequence numbers</td><td>✕</td><td>Stop-and-wait</td></tr>
 <tr><td>rdt2.2</td><td>✓</td><td>✕</td><td>✓ duplicate ACKs, no NAKs</td><td>✕</td><td>Stop-and-wait</td></tr>
@@ -755,6 +763,7 @@ while True:
 <tr><td>Go-Back-N</td><td>✓</td><td>✓</td><td>✓ duplicate ACKs</td><td>✕ discards</td><td>Pipelined</td></tr>
 <tr><td>Selective Repeat</td><td>✓</td><td>✓</td><td>✓</td><td>✓ buffers</td><td>Pipelined</td></tr>
 </tbody></table></div>
+<p class="muted table-note">* The earlier summary slides call rdt1.0 "simple transfer (no ACKs)"; the final slide lists it as stop-and-wait. It never waits for feedback, so "simple transfer" is the safer answer.</p>
 <ul class="notes">
 <li>Stop-and-wait performance:
   <ul>

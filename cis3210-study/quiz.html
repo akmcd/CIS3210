@@ -147,6 +147,7 @@
         if (right && picked.has(j)) b.classList.add('correct');
         else if (right) b.classList.add(multi ? 'missed' : 'correct');
         else if (picked.has(j)) b.classList.add('wrong');
+        if (q.explain) b.lastElementChild.insertAdjacentHTML('beforeend', '<span class="opt-why">' + S.md(q.explain[order[j]]) + '</span>');
       });
       const letters = order.map((oi, j) => S.isRightOption(q, oi) ? LETTERS[j] : null).filter(Boolean);
       const head = ok ? 'Correct.' : multi
@@ -180,6 +181,7 @@
         ? '<h2>Review what you missed</h2>' + missed.map(r =>
             '<div class="exam-q">' + S.stemHTML(r.q) +
             '<p><strong>Your answer:</strong><br>' + S.answerText(r.q, r.chosen) + '</p><p><strong>Correct:</strong><br>' + S.answerText(r.q, r.q.answer) + '</p>' +
+            (r.q.explain ? '<ul class="why-list">' + r.q.options.map((o, i) => '<li>' + S.md(o) + ': ' + S.md(r.q.explain[i]) + '</li>').join('') + '</ul>' : '') +
             '<div class="feedback ok">' + S.md(r.q.why) + '</div></div>').join('')
         : '<p>No misses. Nice work.</p>';
       window.scrollTo(0, 0);
