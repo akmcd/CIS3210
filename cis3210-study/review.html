@@ -56,7 +56,7 @@
       g.items.map(r => {
         const right = S.correctSet(r).map(i => S.md(r.options[i]));
         return '<div class="ex" data-ex="' + r.id + '">' +
-          '<div class="ex-head"><span class="ex-num">' + S.esc(r.num) + '</span><span class="ex-topic">' + S.md(r.q) + '</span>' +
+          '<div class="ex-head"><span class="ex-num">' + S.esc(r.num) + '</span><span class="ex-topic">' + S.md((r.ctx ? r.ctx + ' ' : '') + r.q) + '</span>' +
           '<label class="ex-done"><input type="checkbox"> Done</label></div>' +
           '<details><summary>Show worked answer</summary>' +
           r.worked.map(p => '<p>' + S.md(p) + '</p>').join('') +

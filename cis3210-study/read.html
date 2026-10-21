@@ -489,8 +489,8 @@ S: 221 hamburger.edu closing connection</code></pre>
 <ul class="notes">
 <li>Two kinds of applications:
   <ul>
-  <li><strong>Open</strong>: follows a published standard (an RFC), so independently written clients and servers interoperate (Chrome + Apache). It must use the standard's <strong>well-known port</strong>.</li>
-  <li><strong>Proprietary</strong>: one team writes both sides with an unpublished protocol. It must <strong>avoid well-known ports</strong> (the textbook uses 12000).</li>
+  <li><strong>Open</strong>: follows a published standard (an RFC), so independently written clients and servers interoperate (Chrome + Apache). By convention its server uses the standard's <strong>well-known port</strong> (HTTP 80), so clients know where to connect; this is the textbook's guidance, not a technical requirement.</li>
+  <li><strong>Proprietary</strong>: one team writes both sides with an unpublished protocol. It should <strong>avoid well-known ports</strong> so it doesn't clash with standard services (the textbook uses 12000).</li>
   </ul></li>
 <li>The developer's job:
   <ul>
