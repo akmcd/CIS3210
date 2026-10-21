@@ -533,3 +533,33 @@ li.collapsible { list-style: none; margin-left: -1.1em; }
 .notes-toggle:hover { color: var(--accent); }
 li.collapsible > ul { margin-left: 0.2em; }
 .match-row { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+
+/* ---------- Knowledge Check practice ---------- */
+details.kc-note summary { cursor: pointer; padding: 2px 0; }
+details.kc-note[open] summary { margin-bottom: 8px; }
+.fid-key { list-style: none; padding: 0; margin: 0 0 0.6em; font-size: 0.93rem; }
+.fid-key li { margin: 0 0 6px; }
+.fid-key .fid-tag { margin-right: 6px; }
+.fid-tag { display: inline-block; font-size: 0.78rem; font-weight: 700; border-radius: 999px; padding: 1px 8px; border: 1px solid; white-space: nowrap; }
+.fid-tag.full { color: var(--ok); border-color: var(--ok); }
+.fid-tag.pool { color: var(--t1); border-color: var(--t1); }
+.fid-tag.setup, .fid-tag.answer { color: var(--t3); border-color: var(--t3); }
+.kc-online { font-weight: 400; color: var(--ink-2); font-size: 0.92rem; }
+.kc-outside { display: inline-block; font-weight: 700; font-size: 0.75rem; color: var(--t3); border: 1px solid var(--t3); border-radius: 999px; padding: 0 8px; margin-left: 4px; vertical-align: 2px; }
+.q-concept { margin: 6px 0 2px; font-size: 0.92rem; }
+.key-note { margin: 12px 0 14px; padding: 10px 14px; border-left: 4px solid var(--t3); background: var(--paper-2); border-radius: var(--radius-s); font-size: 0.95rem; }
+.kc-fig { margin: 10px 0 4px; overflow-x: auto; }
+.kc-fig svg { display: block; width: 100%; max-width: 640px; height: auto; }
+.kc-fig text { fill: var(--ink); font-family: var(--font); font-size: 15px; }
+.kc-fig text.f-small { fill: var(--ink-2); font-size: 14px; }
+.kc-fig .f-box { fill: var(--paper-2); stroke: var(--ink-2); stroke-width: 1.5; }
+.kc-fig .f-line { stroke: var(--ink-2); stroke-width: 2; }
+table.fsm { border-collapse: collapse; font-size: 0.88rem; min-width: 520px; }
+table.fsm caption { text-align: left; color: var(--ink-2); font-size: 0.85rem; padding-bottom: 6px; }
+table.fsm th, table.fsm td { border: 1px solid var(--rule); padding: 4px 8px; text-align: left; vertical-align: top; }
+table.fsm thead th { background: var(--code-bg); }
+table.fsm tbody th { font-family: var(--mono); }
+#not-included { max-width: 860px; margin-top: 28px; }
+#not-included .notes { font-size: 0.93rem; }
+
+.q-scenario p + p { margin-top: 0.35em; }

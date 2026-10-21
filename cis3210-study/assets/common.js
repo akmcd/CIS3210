@@ -62,7 +62,7 @@
     }
     return a;
   }
-  function optionOrder(q) { return shuffle(q.options.map((_, i) => i)); }
+  function optionOrder(q) { const idx = q.options.map((_, i) => i); return q.fixed ? idx : shuffle(idx); }
 
   /* ---------- Answers: single choice (answer is a number) or select-all (answer is an array) ---------- */
   function isMulti(q) { return Array.isArray(q.answer); }
@@ -85,8 +85,9 @@
   /* Question stem: scenario (context and/or code) first, then the question itself. */
   function stemHTML(q) {
     let h = q.src ? '<p class="q-src">In class: ' + esc(q.src) + '</p>' : '';
-    if (q.ctx || q.code) {
-      h += '<div class="q-scenario">' + (q.ctx ? '<p>' + md(q.ctx) + '</p>' : '') +
+    if (q.ctx || q.code || q.figure) {
+      h += '<div class="q-scenario">' + (q.ctx ? String(q.ctx).split('\n').map(p => '<p>' + md(p) + '</p>').join('') : '') +
+        (q.figure ? '<figure class="kc-fig">' + q.figure + '</figure>' : '') +
         (q.code ? '<pre><code>' + esc(q.code) + '</code></pre>' : '') + '</div>';
     }
     h += '<div class="q-text">' + md(q.q) + '</div>';
