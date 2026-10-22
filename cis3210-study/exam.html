@@ -106,7 +106,7 @@
   (function () {
     const S = window.Study;
     const el = id => document.getElementById(id);
-    const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
     const BY_ID = {};
     window.QUIZ_BANK.concat(window.EXAM_A).forEach(q => { BY_ID[q.id] = q; });
 
@@ -339,7 +339,7 @@
             return '<div class="option' + (S.isMulti(q) ? ' multi' : '') + cls + '"><span class="letter">' + LETTERS[k] + '</span><span>' + S.md(q.options[oi]) +
               (q.explain ? '<span class="opt-why">' + S.md(q.explain[oi]) + '</span>' : '') + '</span></div>';
           }).join('') +
-          '</div><div class="feedback ' + (ok ? 'ok' : 'no') + '"><strong>' + (ok ? 'Correct.' : (!S.answered(mine) ? 'Not answered.' : 'Incorrect.')) + '</strong>' + S.md(q.why) + '</div></section>';
+          '</div><div class="feedback ' + (ok ? 'ok' : 'no') + '"><strong>' + (ok ? 'Correct.' : (!S.answered(mine) ? 'Not answered.' : 'Incorrect.')) + '</strong>' + S.md(q.why) + '</div>' + S.extrasHTML(q) + '</section>';
       }).join('');
     }
 

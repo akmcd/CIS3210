@@ -563,3 +563,14 @@ table.fsm tbody th { font-family: var(--mono); }
 #not-included .notes { font-size: 0.93rem; }
 
 .q-scenario p + p { margin-top: 0.35em; }
+
+/* ---------- In-class follow-ups ---------- */
+.followups { margin-top: 12px; padding: 10px 14px; border-left: 4px solid var(--t1); background: var(--paper-2); border-radius: var(--radius-s); }
+.followups-h { margin: 0 0 6px; font-weight: 700; }
+.followup + .followup { margin-top: 10px; }
+.followup p { margin: 0 0 0.4em; }
+.followup p:last-child { margin-bottom: 0; }
+.followup-q { color: var(--ink-2); font-size: 0.93rem; }
+.followup-q q { font-style: italic; }
+.choices-note { font-size: 0.88rem; color: var(--ink-2); margin: 10px 0 0; }
+section > .choices-note { margin: -4px 0 14px; max-width: 70ch; }

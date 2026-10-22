@@ -95,6 +95,18 @@
     return h;
   }
 
+  /* Follow-up questions asked in class, and a note when the quiz choices were written for this site. */
+  function extrasHTML(q) {
+    let h = '';
+    if (q.followups && q.followups.length) {
+      h += '<div class="followups"><p class="followups-h">Additional clarification</p>' + q.followups.map(f =>
+        '<div class="followup"><p class="followup-q">You asked: ' + f.asked.map(a => '<q>' + esc(a) + '</q>').join(' then ') + '</p>' +
+        f.answer.map(a => '<p>' + md(a) + '</p>').join('') + '</div>').join('') + '</div>';
+    }
+    if (q.choicesNote) h += '<p class="choices-note">The question is the prof\'s, word for word. His answer choices weren\'t recorded, so these choices were written for this site from the answers given in class.</p>';
+    return h;
+  }
+
   const KIND_LABEL = { concept: 'Concept', scenario: 'Scenario', calc: 'Calculation', code: 'Code or trace' };
 
   /* ---------- Header, nav and theme ---------- */
@@ -149,7 +161,7 @@
   document.addEventListener('DOMContentLoaded', buildHeader);
 
   window.Study = {
-    TOPICS, TOPIC_ORDER, store, esc, md, shuffle, optionOrder, stemHTML, KIND_LABEL,
+    TOPICS, TOPIC_ORDER, store, esc, md, shuffle, optionOrder, stemHTML, extrasHTML, KIND_LABEL,
     isMulti, isCorrect, isRightOption, correctSet, answered, answerText, daysUntilExam, EXAM_DATE, EXAM_NAME
   };
 })();

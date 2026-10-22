@@ -85,7 +85,7 @@
     const KC = window.KC;            /* the site's own extra-practice questions */
     const REF = window.KC_REF;       /* Knowledge Check practice */
     const el = id => document.getElementById(id);
-    const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
     const OFFICIAL = (c, s) => 'https://www-net.cs.umass.edu/kurose_ross/knowledgechecks/problem.php?c=' + c + '&s=' + s;
     const CHAPTERS = { 1: 'Chapter 1: Introduction', 2: 'Chapter 2: Application Layer', 3: 'Chapter 3: Transport Layer' };
     const FID = {
@@ -307,7 +307,7 @@
       if (el('runner').hidden) return;
       if (e.target.closest && e.target.closest('select')) return;
       const up = e.key.toUpperCase();
-      const k = LETTERS.indexOf(up) >= 0 ? LETTERS.indexOf(up) : ['1', '2', '3', '4', '5', '6', '7', '8'].indexOf(e.key);
+      const k = LETTERS.indexOf(up) >= 0 ? LETTERS.indexOf(up) : ['1', '2', '3', '4', '5', '6', '7', '8', '9'].indexOf(e.key);
       if (k >= 0 && !answered && e.key.length === 1) { e.preventDefault(); choose(k); }
       else if (e.key === 'Enter') {
         if (!answered && !el('check').hidden && !el('check').disabled) { e.preventDefault(); check(); }

@@ -14,11 +14,11 @@
   <main>
     <div class="page-head">
       <h1>In-class questions</h1>
-      <p>Every question the prof asked in class from October 1 to October 20, in his wording. They're the best guide to how exam questions will be phrased. Answer each one in your head first, then open the worked answer.</p>
+      <p>Every question the prof asked in class from October 1 to October 22, in his wording. They're the best guide to how exam questions will be phrased. Answer each one in your head first, then open the worked answer.</p>
     </div>
 
     <div class="review-bar">
-      <div><strong id="done-count">0 of 26</strong> <span class="muted">questions done</span>
+      <div><strong id="done-count">0 of 31</strong> <span class="muted">questions done</span>
         <div class="fc-progress" aria-hidden="true"><span id="done-bar"></span></div></div>
       <div class="btn-row">
         <a class="btn" href="quiz.html?topic=review&amp;all=1" id="quiz-link">Quiz me on these</a>
@@ -43,7 +43,8 @@
     const groups = [];
     R.forEach(r => {
       let g = groups.find(x => x.date === r.date);
-      if (!g) { g = { date: r.date, lecture: r.lecture, items: [] }; groups.push(g); }
+      if (!g) { g = { date: r.date, lecture: r.lecture, items: [], note: false }; groups.push(g); }
+      if (r.choicesNote) g.note = true;
       g.items.push(r);
     });
     const slug = d => d.toLowerCase().replace(/\s+/g, '-');
@@ -53,6 +54,7 @@
 
     document.getElementById('list').innerHTML = groups.map(g =>
       '<section id="' + slug(g.date) + '"><h2>' + S.esc(g.date) + ': ' + S.esc(g.lecture) + '</h2>' +
+      (g.note ? '<p class="choices-note">Questions are the prof\'s, word for word. His answer choices weren\'t recorded, so the choices in the quiz versions were written for this site from the answers given in class.</p>' : '') +
       g.items.map(r => {
         const right = S.correctSet(r).map(i => S.md(r.options[i]));
         return '<div class="ex" data-ex="' + r.id + '">' +
@@ -60,6 +62,7 @@
           '<label class="ex-done"><input type="checkbox"> Done</label></div>' +
           '<details><summary>Show worked answer</summary>' +
           r.worked.map(p => '<p>' + S.md(p) + '</p>').join('') +
+          S.extrasHTML(Object.assign({}, r, { choicesNote: false })) +
           '<div class="ex-key"><strong>' + (S.isMulti(r) ? 'Correct choices in the quiz version:' : 'Correct choice in the quiz version:') + '</strong><ul>' +
           right.map(t => '<li>' + t + '</li>').join('') + '</ul></div>' +
           '</details></div>';

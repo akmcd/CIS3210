@@ -40,7 +40,7 @@
           <button class="btn" type="button" id="next" hidden>Next question</button>
           <button class="btn quiet" type="button" id="quit">End quiz</button>
         </div>
-        <p class="muted" style="margin-top:14px;font-size:0.9rem">Keys: <span class="kbd">A</span>–<span class="kbd">E</span> or <span class="kbd">1</span>–<span class="kbd">5</span> to choose, <span class="kbd">Enter</span> to check or go on.</p>
+        <p class="muted" style="margin-top:14px;font-size:0.9rem">Keys: a choice's letter or number to choose, <span class="kbd">Enter</span> to check or go on.</p>
       </div>
     </div>
 
@@ -67,7 +67,7 @@
     const S = window.Study;
     const BANK = window.QUIZ_BANK;
     const el = id => document.getElementById(id);
-    const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
 
     let topic = null, list = [], idx = 0, order = [], answered = false, picked = new Set(), results = [];
 
@@ -153,7 +153,7 @@
       const head = ok ? 'Correct.' : multi
         ? 'Not quite. The correct set is ' + letters.join(', ') + '.'
         : 'Not quite. The answer is ' + letters[0] + '.';
-      el('feedback').innerHTML = '<div class="feedback ' + (ok ? 'ok' : 'no') + '" role="status"><strong>' + head + '</strong>' + S.md(q.why) + '</div>';
+      el('feedback').innerHTML = '<div class="feedback ' + (ok ? 'ok' : 'no') + '" role="status"><strong>' + head + '</strong>' + S.md(q.why) + '</div>' + S.extrasHTML(q);
       el('check').hidden = true;
       el('next').hidden = false;
       el('next').textContent = idx === list.length - 1 ? 'See results' : 'Next question';
@@ -182,7 +182,7 @@
             '<div class="exam-q">' + S.stemHTML(r.q) +
             '<p><strong>Your answer:</strong><br>' + S.answerText(r.q, r.chosen) + '</p><p><strong>Correct:</strong><br>' + S.answerText(r.q, r.q.answer) + '</p>' +
             (r.q.explain ? '<ul class="why-list">' + r.q.options.map((o, i) => '<li>' + S.md(o) + ': ' + S.md(r.q.explain[i]) + '</li>').join('') + '</ul>' : '') +
-            '<div class="feedback ok">' + S.md(r.q.why) + '</div></div>').join('')
+            '<div class="feedback ok">' + S.md(r.q.why) + '</div>' + S.extrasHTML(r.q) + '</div>').join('')
         : '<p>No misses. Nice work.</p>';
       window.scrollTo(0, 0);
     }
@@ -199,7 +199,7 @@
       if (el('runner').hidden) return;
       if (e.target.closest && e.target.closest('select, input')) return;
       const key = e.key.toUpperCase();
-      const k = LETTERS.indexOf(key) >= 0 ? LETTERS.indexOf(key) : ['1', '2', '3', '4', '5', '6'].indexOf(e.key);
+      const k = LETTERS.indexOf(key) >= 0 ? LETTERS.indexOf(key) : ['1', '2', '3', '4', '5', '6', '7', '8', '9'].indexOf(e.key);
       if (k >= 0 && !answered) { e.preventDefault(); choose(k); }
       else if (e.key === 'Enter') {
         if (!answered && picked.size) { e.preventDefault(); answer(); }
