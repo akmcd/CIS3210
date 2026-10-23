@@ -54,6 +54,10 @@ python3 -m http.server 8000
 # then visit http://localhost:8000
 ```
 
+## After editing
+
+Browsers can keep old copies of `assets/` and `data/` files for a few minutes. Every page loads them with a version tag (`?v=...`); change it in all the HTML files after an edit so visitors get the new files straight away.
+
 ## Editing content
 
 - Flashcards: `data/flashcards.js`
