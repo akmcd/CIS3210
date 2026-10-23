@@ -4,10 +4,10 @@
    Extra fields: src (date, lecture, number) and worked (paragraphs shown on the In-class questions page). */
 (function () {
   const R = [
-    /* ---------------- September 29 — HTTP, Quiz 4 ----------------
+    /* ---------------- September 29 — HTTP ----------------
        Questions and choices as recalled from the quiz. addedChoices = written for this site
        because the rest of the original choices weren't recalled. */
-    { id: 'r-q4-1', date: 'September 29', lecture: 'HTTP, Quiz 4', num: 'Q1', kind: 'concept', choiceSource: 'recalled', addedChoices: [1, 2, 3],
+    { id: 'r-q4-1', date: 'September 29', lecture: 'HTTP', num: 'Q1', kind: 'concept', choiceSource: 'recalled', addedChoices: [1, 2, 3],
       q: 'Why might a server close an idle persistent HTTP connection?',
       options: ['Reclaim connection resources when likely reuse no longer justifies their cost',
         'HTTP/1.1 requires the server to close the connection after every response',
@@ -22,7 +22,7 @@
       worked: ['A persistent connection stays open after a response so later requests can reuse it and skip a new TCP handshake. That saves an RTT per object.',
         'The open connection isn\'t free: the server holds a socket and buffers for it. A busy server can only keep so many open.',
         'So servers use an idle timeout. If a client hasn\'t sent anything for a while, more requests are unlikely, and the server closes the connection to reclaim its resources.'] },
-    { id: 'r-q4-2', date: 'September 29', lecture: 'HTTP, Quiz 4', num: 'Q2', kind: 'scenario', choiceSource: 'recalled', addedChoices: [2, 3],
+    { id: 'r-q4-2', date: 'September 29', lecture: 'HTTP', num: 'Q2', kind: 'scenario', choiceSource: 'recalled', addedChoices: [2, 3],
       ctx: 'A browser downloads objects one at a time using non-persistent HTTP.',
       q: 'Why can many small objects take longer to download than one larger object of the same size?',
       options: ['Each object requires a new TCP connection, adding an RTT',
@@ -37,7 +37,7 @@
       why: 'Each object costs about 2 RTT of overhead (TCP setup plus request/response) on top of its transmission time. Many small objects pay that overhead many times; one large object of the same total size pays it once.',
       worked: ['With non-persistent HTTP, every object gets its own TCP connection: one RTT for the handshake, then one RTT for the HTTP request and the start of the response, plus the time to transmit the object.',
         'Total transmission time is about the same either way, because the total size is the same. What differs is the overhead: n small objects pay 2 RTT each, while one large object pays 2 RTT once.'] },
-    { id: 'r-q4-3', date: 'September 29', lecture: 'HTTP, Quiz 4', num: 'Q3', kind: 'scenario', choiceSource: 'recalled', addedChoices: [2, 3],
+    { id: 'r-q4-3', date: 'September 29', lecture: 'HTTP', num: 'Q3', kind: 'scenario', choiceSource: 'recalled', addedChoices: [2, 3],
       ctx: 'Five HTTP/1.1 requests are pipelined. The first response is slow.',
       q: 'Which limitations remain?',
       options: ['Ready later responses can wait behind the first response',
@@ -53,7 +53,7 @@
       worked: ['Pipelining removes two costs: waiting for each response before sending the next request, and opening a new connection per object.',
         'It doesn\'t remove ordering. HTTP/1.1 sends responses in the same order as the requests, so if the first response is slow (a big object, a slow database), responses 2–5 wait behind it even when they are ready.',
         'That is head-of-line (HOL) blocking. HTTP/2 breaks responses into frames and interleaves them, so a slow object no longer blocks the others.'] },
-    { id: 'r-q4-4', date: 'September 29', lecture: 'HTTP, Quiz 4', num: 'Q4', kind: 'calc', choiceSource: 'written',
+    { id: 'r-q4-4', date: 'September 29', lecture: 'HTTP', num: 'Q4', kind: 'calc', choiceSource: 'written',
       q: 'RTT is 80 ms. Ignoring DNS, processing, transmission time, how long does one new non-persistent HTTP fetch take?',
       options: ['160 ms', '80 ms', '240 ms', '40 ms'],
       answer: 0,
@@ -65,7 +65,7 @@
       worked: ['RTT 1: the client sends SYN and gets SYNACK back. The TCP connection is ready.',
         'RTT 2: the client sends the HTTP request (along with the handshake\'s final ACK) and gets the response back.',
         'Ignoring DNS, processing and transmission time, that is 2 × 80 ms = **160 ms**.'] },
-    { id: 'r-q4-5', date: 'September 29', lecture: 'HTTP, Quiz 4', num: 'Q5', kind: 'calc', choiceSource: 'recalled',
+    { id: 'r-q4-5', date: 'September 29', lecture: 'HTTP', num: 'Q5', kind: 'calc', choiceSource: 'recalled',
       q: 'With a fixed RTT, why does increasing transmission rate usually help a 5 MB object more than a 1 Kb object?',
       options: ['Payload transmission time grows with size',
         'The fixed round-trip portion limits gains for very small objects',
