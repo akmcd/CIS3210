@@ -103,7 +103,15 @@
         '<div class="followup"><p class="followup-q">You asked: ' + f.asked.map(a => '<q>' + esc(a) + '</q>').join(' then ') + '</p>' +
         f.answer.map(a => '<p>' + md(a) + '</p>').join('') + '</div>').join('') + '</div>';
     }
-    if (q.choicesNote) h += '<p class="choices-note">The question is the prof\'s, word for word. His answer choices weren\'t recorded, so these choices were written for this site from the answers given in class.</p>';
+    const src = q.choiceSource || (q.choicesNote ? 'written' : null);
+    if (src === 'written') {
+      h += '<p class="choices-note">The quiz\'s answer choices weren\'t recorded, so these choices were written for this site.</p>';
+    } else if (src === 'recalled') {
+      const list = idx => (idx || []).map(i => '<q>' + md(String(q.options[i]).replace(/\.$/, '')) + '</q>').join('; ');
+      h += '<p class="choices-note">Choices as recalled from the quiz.' +
+        ((q.completedChoices || []).length ? ' Only partly recalled, finished for this site: ' + list(q.completedChoices) + '.' : '') +
+        ((q.addedChoices || []).length ? ' Added for practice (not from the quiz): ' + list(q.addedChoices) + '.' : '') + '</p>';
+    }
     return h;
   }
 

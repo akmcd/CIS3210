@@ -3,11 +3,11 @@
 A static study site for CIS*3210 Computer Networks (Fall 2026, Sajid Marhon), covering Week 0 through Reliable Data Transfer (October 20). No build step, no dependencies.
 
 - **Read** (`read.html`): eleven topics from the slides and Kurose & Ross (Ch. 1, 2.1–2.4, 2.6, 3.1–3.4), a cheat sheet, and nine step-through demos (encapsulation, DNS resolution, HTTP RTT counting, head-of-line blocking, demultiplexing, the UDP checksum, rdt3.0, utilization, Go-Back-N vs Selective Repeat).
-- **In-class questions** (`review.html`): the prof's 31 questions from October 1–22 (including RDT Quiz 2), each with a worked answer hidden until you open it, and a done checklist.
+- **In-class questions** (`review.html`): the prof's 36 questions (Quiz 4 on HTTP, then October 1–22, including RDT Quiz 2), each with a worked answer hidden until you open it, and a done checklist.
 - **Textbook checks** (`knowledge.html`): **Knowledge Check practice** for 14 sections (1.1–1.5, 2.1–2.4, 2.6, 3.1–3.4): 96 items, one for each Kurose & Ross online Knowledge Check question in those sections, in the original order (data in `data/kc-ref.js`). Setups, numbers and correct answers follow the originals; the wording is the site's own. Each item names its source question, says how much of the original was available, and carries an answer-key note where the 9th edition disagrees with the transcription's key. **Extra practice** keeps the site's earlier questions (6 per section in `data/kc.js`, plus 4 from the topic quizzes). The prof's in-class questions are never mixed in.
 - **Flashcards** (`flashcards.html`): 113 cards by topic. Marks the ones you know.
-- **Quizzes** (`quiz.html`): 173 questions by topic (142 topic questions plus the 31 in-class questions turned into quiz form), with an explanation after each answer. About one in five are "select all that apply", and those explain every choice after you answer.
-- **Practice exam** (`exam.html`): 50 questions with a 60- or 75-minute timer, or none. Exam A is 50 questions not used anywhere else; Exam B draws 50 from the quiz bank; Exam C is all 31 in-class questions plus 19 others. Results are broken down by topic and question type.
+- **Quizzes** (`quiz.html`): 178 questions by topic (142 topic questions plus the 36 in-class questions turned into quiz form), with an explanation after each answer. About one in five are "select all that apply", and those explain every choice after you answer.
+- **Practice exam** (`exam.html`): 50 questions with a 60- or 75-minute timer, or none. Exam A is 50 questions not used anywhere else; Exam B draws 50 from the quiz bank; Exam C is all 36 in-class questions plus 14 others. Results are broken down by topic and question type.
 
 Progress (known cards, best quiz scores, exam history, an exam in progress) is saved in your browser's local storage. Nothing is sent anywhere.
 
@@ -61,7 +61,7 @@ python3 -m http.server 8000
 - Extra practice (Textbook checks page): `data/kc.js`
 - Quiz questions: `data/bank.js`
 - Practice Exam A: `data/exam.js`
-- In-class questions (quiz versions and worked answers): `data/review.js`. Optional fields: `followups` (your questions asked in class, shown under "Additional clarification") and `choicesNote` (marks choices written for this site when the prof's weren't recorded).
+- In-class questions (quiz versions and worked answers): `data/review.js`. Optional fields: `followups` (your questions asked in class, shown under "Additional clarification") and `choiceSource` (`'recalled'` for choices remembered from the quiz, `'written'` when none were recorded), with `addedChoices` / `completedChoices` listing choices written or finished for this site.
 
 Each question has `id`, `topic`, `kind` (`concept`, `scenario`, `calc` or `code`), `q`, optional `code` (shown as a block), `options`, `answer` and `why`. `answer` is the index of the correct option, or an array of indices for a "select all that apply" question. Options are shuffled when shown, so the stored order doesn't matter. Wrap code words in backticks and use `**bold**` for emphasis.
 
