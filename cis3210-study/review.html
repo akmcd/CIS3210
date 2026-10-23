@@ -14,7 +14,7 @@
   <main>
     <div class="page-head">
       <h1>In-class questions</h1>
-      <p>Every question the prof asked in class from Quiz 4 (HTTP) through October 22, in his wording. They're the best guide to how exam questions will be phrased. Answer each one in your head first, then open the worked answer.</p>
+      <p>Every question the prof asked in class from September 29 to October 22, in his wording. They're the best guide to how exam questions will be phrased. Answer each one in your head first, then open the worked answer.</p>
     </div>
 
     <div class="review-bar">
@@ -50,7 +50,7 @@
     const slug = d => d.toLowerCase().replace(/\s+/g, '-');
 
     document.getElementById('toc').innerHTML = groups.map(g =>
-      '<li><a href="#' + slug(g.date) + '">' + S.esc(g.date.replace('October', 'Oct')) + ': ' + S.esc(g.lecture) + '</a></li>').join('');
+      '<li><a href="#' + slug(g.date) + '">' + S.esc(g.date.replace('October', 'Oct').replace('September', 'Sep')) + ': ' + S.esc(g.lecture) + '</a></li>').join('');
 
     document.getElementById('list').innerHTML = groups.map(g =>
       '<section id="' + slug(g.date) + '"><h2>' + S.esc(g.date) + ': ' + S.esc(g.lecture) + '</h2>' +
